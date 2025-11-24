@@ -1,6 +1,6 @@
 services:
   adguard-home:
-    image: adguard/adguardhome:latest
+    image: m.daocloud.io/docker.io/adguard/adguardhome:latest
     container_name: adguard-home
     restart: unless-stopped
     ports:

@@ -8,31 +8,5 @@
                 "path": "docker"
             }
         ]
-    },
-    "data-share":
-    {
-        "shares":
-        [
-            {
-                "name": "adguard-home",
-                "permission":
-                {
-                    "rw":
-                    [
-                        "docker-adguard-home"
-                    ]
-                }
-            },
-            {
-                "name": "adguard-home/data",
-                "permission":
-                {
-                    "rw":
-                    [
-                        "docker-adguard-home"
-                    ]
-                }
-            }
-        ]
     }
 }

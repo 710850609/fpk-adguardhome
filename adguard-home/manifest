@@ -13,7 +13,7 @@ distributor           = BoB
 distributor_url       = https://club.fnnas.com/home.php?mod=space&uid=33130&do=thread&view=me&from=space
 
 desktop_uidir         = ui
-desktop_applaunchname = adguard-home.Application
+desktop_applaunchname = adguard-home.InitialSetup
 
 service_port          = 53
 checkport             = true

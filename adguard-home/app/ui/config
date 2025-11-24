@@ -9,14 +9,15 @@
             "url": "/{url-path}",
             "allUsers": false
         },        
-        "adguard-home.Init": {
+        "adguard-home.InitialSetup": {
             "title": "AdguardHome-初始化安装",
             "icon": "images/icon_{0}.png",
             "type": "url",
             "protocol": "http",
             "port": "3000",
             "url": "/",
-            "allUsers": false
+            "allUsers": false,
+            "noDisplay": true
         }
     }
 }
