@@ -1,0 +1,19 @@
+appname               = adguard-home
+version               = 1.0.0
+display_name          = Adguard Home
+desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器
+
+arch                  = x86_64
+source                = thirdparty
+
+maintainer            = AdguardTeam
+maintainer_url        = https://github.com/AdguardTeam/AdGuardHome
+
+distributor           = BoB
+distributor_url       = https://club.fnnas.com/home.php?mod=space&uid=33130&do=thread&view=me&from=space
+
+desktop_uidir         = ui
+desktop_applaunchname = adguard-home.Application
+
+service_port          = 53
+checkport             = true

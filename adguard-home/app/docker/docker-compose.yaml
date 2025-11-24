@@ -1,0 +1,12 @@
+services:
+  adguard-home:
+    image: adguard/adguardhome:latest
+    container_name: adguard-home
+    restart: unless-stopped
+    ports:
+      - 3000:3000/tcp # 用于初始安装
+      - 6080:80/tcp   # 用于网页界面
+      - 53:53/udp     # 用于 DNS 服务器
+    volumes:
+      - "${TRIM_PKGVAR}/work:/opt/adguardhome/work"
+      - "${TRIM_PKGVAR}/conf:/opt/adguardhome/conf"

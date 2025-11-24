@@ -1,0 +1,1 @@
+cd adguard-home && appcenter-cli install-local && cd ../

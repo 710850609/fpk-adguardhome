@@ -1,0 +1,22 @@
+{
+    ".url": {
+        "adguard-home.Application": {
+            "title": "AdguardHome",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "6080",
+            "url": "/{url-path}",
+            "allUsers": false
+        },        
+        "adguard-home.Init": {
+            "title": "AdguardHome-初始化安装",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "3000",
+            "url": "/",
+            "allUsers": false
+        }
+    }
+}
