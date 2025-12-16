@@ -1,0 +1,16 @@
+#!/bin/bash
+
+### This script is called after the user uninstalls the application.
+
+LOG_FILE="${TRIM_PKGVAR}/info.log"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+if [ "${wizard_data_action}" == "delete" ]; then
+    log_msg "卸载时，用户选择清除数据"
+    bash -c "rm -rf ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1 &
+fi
+
+exit 0

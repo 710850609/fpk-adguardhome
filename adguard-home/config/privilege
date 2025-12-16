@@ -1,8 +1,0 @@
-{
-    "defaults":
-    {
-        "run-as": "package"
-    },
-    "username": "docker-adguard-home",
-    "groupname": "docker-adguard-home"
-}

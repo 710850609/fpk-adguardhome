@@ -1,0 +1,13 @@
+{
+    ".url": {
+        "AdGuardHome.Application": {
+            "title": "AdGuard",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "15555",
+            "url": "",
+            "allUsers": false
+        }
+    }
+}

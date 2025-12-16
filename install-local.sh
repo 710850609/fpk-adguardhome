@@ -1,1 +1,1 @@
-cd adguard-home && appcenter-cli install-local && cd ../
+rm -rf /vol1/@appdata/AdGuardHome && cd AdGuardHome && appcenter-cli install-local --env ../config.env && cd ../

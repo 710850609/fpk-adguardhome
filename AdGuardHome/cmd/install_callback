@@ -1,0 +1,57 @@
+#!/bin/bash
+
+### This script is called after the user installs the application.
+
+LOG_FILE="${TRIM_PKGVAR}/info.log"
+CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
+SCRIPT_PATH="${TRIM_APPDEST}"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+encrypt_password() {
+    # python 脚本只输出哈希；stderr 进日志
+    "$SCRIPT_PATH/script/.venv/bin/python3" "${SCRIPT_PATH}/script/htpasswd.py" "$1" 2>> ${LOG_FILE} 2>&1
+}
+
+set_yaml() {
+    # Usage: ./yaml_set.py 'key.path' 'value' file.yaml
+    "$SCRIPT_PATH/script/.venv/bin/python3" "${SCRIPT_PATH}/script/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
+}
+
+
+mkdir -p "${TRIM_PKGVAR}"
+log_msg "创建目标路径：${TRIM_PKGVAR}"
+bash -c "cd ${TRIM_APPDEST} && ls" >> ${LOG_FILE} 2>&1
+
+# mkdir -p "${TRIM_APPDEST}"
+
+# 解压脚本
+bash -c "unzip ${TRIM_TEMP_TPKFILE}/cmd/script.zip -d ${SCRIPT_PATH}" >> ${LOG_FILE} 2>&1
+log_msg "解压脚本到: ${SCRIPT_PATH}"
+
+
+# 设置运行配置
+src_setting="${TRIM_TEMP_TPKFILE}/config/setting/${wizard_setting_type}"
+log_msg "安装时，用户选择默认配置: ${wizard_setting_type}, 来源路径：${src_setting}"
+bash -c "cp -rf ${src_setting}/* ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
+
+# 设置管理员账号
+log_msg "设置管理员账号: ${wizard_admin_name}"
+set_yaml "users.0.name" "${wizard_admin_name}" "${CFG_FILE}"
+# bash -c "yq -i 'users[0].name=${wizard_admin_name}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+
+# 设置管理员密码
+password=$(encrypt_password "${wizard_admin_password}")
+log_msg "设置管理员密码: ${password}"
+set_yaml "users.0.password" "${password}" "${CFG_FILE}"
+# bash -c "yq -i 'users[0].password=${password}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+
+# 设置自定义过滤
+filter_path="${TRIM_APPDEST_VOL}/@appdata/AdGuardHome/userfilters/*"
+log_msg "设置自定义过滤: ${filter_path}"
+set_yaml "filtering.safe_fs_patterns.0" "${filter_path}" "${CFG_FILE}"
+# bash -c "yq -i 'filtering.safe_fs_patterns[0]=${filter_path}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+
+exit 0

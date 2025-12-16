@@ -1,0 +1,66 @@
+[
+    {
+        "stepTitle": "运行配置",
+        "items": [
+            {
+                "type": "tips",
+                "helpText": "运行配置都使用15555端口，超管账号admin， 超管密码：admin666"
+            },
+            {
+                "type": "tips",
+                "helpText": "国内优化配置，增加额外设置：DNS设置、DNS广告黑名单"
+            },
+            {
+                "type": "select",
+                "field": "wizard_setting_type",
+                "label": "运行配置",
+                "initValue": "default",
+                "options": [
+                    {
+                        "label": "默认",
+                        "value": "default"
+                    },
+                    {
+                        "label": "国内优化配置(新手推荐)",
+                        "value": "inner"
+                    }
+                ]
+            }
+        ]
+    }, 
+    {
+        "stepTitle": "管理员账户",
+        "items": [
+            {
+                "type": "text",
+                "field": "wizard_admin_name",
+                "label": "管理员账号",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "请输入管理员账号"
+                    },
+                    {
+                        "pattern": "^[a-zA-Z0-9_]+$",
+                        "message": "用户名只能包含字母、数字和下划线"
+                    }
+                ]
+            },            
+            {
+                "type": "password",
+                "field": "wizard_admin_password",
+                "label": "管理员密码",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "请输入管理员密码"
+                    },
+                    {
+                        "min": 4,
+                        "message": "密码长度不能少于4位"
+                    }
+                ]
+            }
+        ]
+    }
+]
