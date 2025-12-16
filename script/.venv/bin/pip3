@@ -1,4 +1,4 @@
-#!/vol1/1000/fpk_ws/fpk-adguardhome/AdGuardHome/app/script/.venv/bin/python3
+#!/vol1/1000/fpk_ws/fpk-adguardhome/script/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

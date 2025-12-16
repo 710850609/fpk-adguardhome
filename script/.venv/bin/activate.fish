@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /vol1/1000/fpk_ws/fpk-adguardhome/AdGuardHome/app/script/.venv
+set -gx VIRTUAL_ENV /vol1/1000/fpk_ws/fpk-adguardhome/script/.venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

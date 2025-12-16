@@ -8,7 +8,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV /vol1/1000/fpk_ws/fpk-adguardhome/AdGuardHome/app/script/.venv
+setenv VIRTUAL_ENV /vol1/1000/fpk_ws/fpk-adguardhome/script/.venv
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/"bin":$PATH"

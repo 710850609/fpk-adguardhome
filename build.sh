@@ -15,10 +15,25 @@ if [ ! -f "${bin_file}" ]; then
     rm -f AdGuardHome_linux_amd64.tar.gz
 fi
 
-# 压缩py脚本
-echo "打包脚本"
-rm -f AdGuardHome/cmd/script.zip
-zip -rq AdGuardHome/cmd/script.zip ./script
+
+# 下载py离线依赖
+echo "创建并激活py虚拟环境"
+cd script
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+# 回写固定版本
+# pip freeze > requirements.txt
+rm -rf wheels
+echo "下载离线包, 使用pip: $(pip --version)"
+pip download -d wheels -r requirements.txt
+cd ../
+# 下载 wheel 到本地
+app_script_path="AdGuardHome/app/script"
+rm -rf "${app_script_path}"
+echo "写入脚本到app"
+rsync -a --exclude='.venv'  script/  "${app_script_path}"
+
 
 app_version="${adh_version}-${fpk_version}"
 sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${app_version}|" 'AdGuardHome/manifest'

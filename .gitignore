@@ -1,3 +1,5 @@
 *.fpk
 *.tar.gz
-AdGuardHome/cmd/script.zip
+AdGuardHome/app/script
+script/.venv
+script/wheel
