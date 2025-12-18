@@ -1,5 +1,12 @@
 #!/bin/bash
 
 ### This script is called before the user installs the application.
+echo "当前运行用户: $TRIM_RUN_USERNAME"
+echo "应用专用用户: $TRIM_USERNAME"
 
+if [ "$TRIM_RUN_USERNAME" = "root" ]; then
+    echo "应用以 root 权限运行"
+else
+    echo "应用以应用用户权限运行"
+fi
 exit 0

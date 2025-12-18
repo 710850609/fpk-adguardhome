@@ -1,10 +1,11 @@
 #!/bin/bash
 
 LOG_FILE="${TRIM_PKGVAR}/info.log"
-PID_FILE="${TRIM_PKGVAR}/app.pid"
+WORK_DIR="${TRIM_PKGVAR}"
+PID_FILE="${WORK_DIR}/app.pid"
 
 # write the command to start your program here 
-CMD="${TRIM_APPDEST}/bin/AdGuardHome --config ${TRIM_PKGVAR}/AdGuardHome.yaml --work-dir ${TRIM_PKGVAR} --pidfile ${PID_FILE}"
+CMD="${TRIM_APPDEST}/bin/AdGuardHome --config ${WORK_DIR}/AdGuardHome.yaml --work-dir ${WORK_DIR} --pidfile ${PID_FILE} --logfile ${WORK_DIR}/adg.log"
 
 log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
@@ -17,6 +18,8 @@ start_process() {
 
     log_msg "Starting process ..."
     # run cmd to start process
+    
+    bash -c "setcap 'cap_net_bind_service=+ep' ${TRIM_APPDEST}/bin/AdGuardHome" >> ${LOG_FILE} 2>&1 &
     bash -c "${CMD}" >> ${LOG_FILE} 2>&1 &
     # write pid to pidfile
     # printf "%s" "$!" > ${PID_FILE}

@@ -3,6 +3,7 @@
 ### This script is called after the user installs the application.
 
 LOG_FILE="${TRIM_PKGVAR}/info.log"
+DEFAULT_CFG_FILE="${TRIM_APPDEST}/bin/AdGuardHome.yaml"
 CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
 SCRIPT_PATH="${TRIM_APPDEST}/script"
 
@@ -20,39 +21,93 @@ set_yaml() {
     "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
 }
 
+# 旧数据清理
+overwrite_cfg="false"
+if [ "${wizard_coverage_config}" == "true" ]; then
+    bash -c "rm -rf ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
+    log_msg "安装时，用户选择 覆盖已有配置，清理已有配置"
+    overwrite_cfg="true"
+fi
 
 mkdir -p "${TRIM_PKGVAR}"
 log_msg "创建目标路径：${TRIM_PKGVAR}"
 
 # 安装脚本
 log_msg "创建虚拟环境"
-bash -c "python3 -m venv ${SCRIPT_PATH}/.venv" >> ${LOG_FILE} 2>&1
-log_msg "激活虚拟环境"
-bash -c "source ${SCRIPT_PATH}/.venv/bin/activate" >> ${LOG_FILE} 2>&1
+bash -c "/usr/bin/python3 -m venv ${SCRIPT_PATH}/.venv" >> ${LOG_FILE} 2>&1
 log_msg "安装离线依赖"
 bash -c "${SCRIPT_PATH}/.venv/bin/pip install --no-index --find-links=${SCRIPT_PATH}/wheels -r ${SCRIPT_PATH}/requirements.txt" >> ${LOG_FILE} 2>&1
 
 
 # 设置运行配置
-src_setting="${TRIM_TEMP_TPKFILE}/config/setting/${wizard_setting_type}"
-log_msg "安装时，用户选择默认配置: ${wizard_setting_type}"
-bash -c "cp -rf ${src_setting}/* ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
+if [ ! -f "${CFG_FILE}" ]; then
+    log_msg "不存在配置文件，拷贝默认配置"
+    bash -c "cp -f ${DEFAULT_CFG_FILE} ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+    overwrite_cfg="true"
+else
+    log_msg "已存在配置文件，跳过设置配置"
+fi
+
+log_msg "安装时，用户选择配置: ${wizard_setting_type}"
+log_msg "是否需要覆盖配置: ${overwrite_cfg}"
+if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; then
+    log_msg "设置upstream_dns"
+    set_yaml "dns.upstream_dns[0]" "'# 国内主用'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[1]" "'[/*.cn/]https://dns.alidns.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[2]" "'[/*.qq.com/]https://dns.alidns.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[3]" "'[/*.bilibili.com/]https://dns.alidns.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[4]" "'# 微软/Steam 香港节点'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[5]" "'[/*.microsoft.com/]https://dns.alidns.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[6]" "'[/steamcommunity.com/]https://dns.alidns.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[7]" "'# 纯海外 CDN'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[8]" "'[/*.cloudfront.net/]https://dns.cloudflare.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[9]" "'[/*.akamaihd.net/]https://dns.cloudflare.com/dns-query'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[10]" "'# 默认兜底 →  DoH'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[11]" "https://dns.alidns.com/dns-query" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[12]" "https://doh.pub/dns-query" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[13]" "https://dns.cloudflare.com/dns-query" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[14]" "'# 兜底纯 UDP(断网也能解析)'" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[15]" "223.5.5.5" "${CFG_FILE}"
+
+    log_msg "设置bootstrap_dns"
+    set_yaml "dns.bootstrap_dns[0]" "223.5.5.5" "${CFG_FILE}"
+    set_yaml "dns.bootstrap_dns[1]" "119.29.29.29" "${CFG_FILE}"
+
+    log_msg "设置filters"
+    set_yaml "dns.filters[0].id" "4" "${CFG_FILE}"
+    set_yaml "dns.filters[0].enabled" "true" "${CFG_FILE}"
+    set_yaml "dns.filters[0].name" "大全版本" "${CFG_FILE}"
+    set_yaml "dns.filters[0].url" "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt" "${CFG_FILE}"
+    set_yaml "dns.filters[1].id" "3" "${CFG_FILE}"
+    set_yaml "dns.filters[1].enabled" "true" "${CFG_FILE}"
+    set_yaml "dns.filters[1].name" "国内视频/APP广告" "${CFG_FILE}"
+    set_yaml "dns.filters[1].url" "https://anti-ad.net/adguard.txt" "${CFG_FILE}"
+    set_yaml "dns.filters[2].id" "1" "${CFG_FILE}"
+    set_yaml "dns.filters[2].enabled" "false" "${CFG_FILE}"
+    set_yaml "dns.filters[2].name" "AdGuard DNS filter" "${CFG_FILE}"
+    set_yaml "dns.filters[2].url" "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt" "${CFG_FILE}"
+    set_yaml "dns.filters[3].id" "2" "${CFG_FILE}"
+    set_yaml "dns.filters[3].enabled" "false" "${CFG_FILE}"
+    set_yaml "dns.filters[3].name" "AdAway Default Blocklist" "${CFG_FILE}"
+    set_yaml "dns.filters[3].url" "https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt" "${CFG_FILE}"
+fi
+
 
 # 设置管理员账号
 log_msg "设置管理员账号: ${wizard_admin_name}"
-set_yaml "users.0.name" "${wizard_admin_name}" "${CFG_FILE}"
-# bash -c "yq -i 'users[0].name=${wizard_admin_name}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+set_yaml "users[0].name" "${wizard_admin_name}" "${CFG_FILE}"
+
 
 # 设置管理员密码
 password=$(encrypt_password "${wizard_admin_password}")
-log_msg "设置管理员密码: ${password}"
-set_yaml "users.0.password" "${password}" "${CFG_FILE}"
-# bash -c "yq -i 'users[0].password=${password}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+log_msg "设置管理员密码: ${wizard_admin_password}"
+set_yaml "users[0].password" "${password}" "${CFG_FILE}"
+
 
 # 设置自定义过滤
 filter_path="${TRIM_APPDEST_VOL}/@appdata/AdGuardHome/userfilters/*"
 log_msg "设置自定义过滤: ${filter_path}"
-set_yaml "filtering.safe_fs_patterns.0" "${filter_path}" "${CFG_FILE}"
-# bash -c "yq -i 'filtering.safe_fs_patterns[0]=${filter_path}' ${CFG_FILE}" >> ${LOG_FILE} 2>&1
+set_yaml "filtering.safe_fs_patterns[0]" "${filter_path}" "${CFG_FILE}"
+
 
 exit 0

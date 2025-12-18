@@ -1,14 +1,36 @@
-[
+[ 
+    {
+        "stepTitle": "使用协议",
+        "items": [
+            {
+                "type": "tips",
+                "helpText": "本程序需在 NAS 以 root 身份运行，仅用于获取监听 53 端口的系统权限，以提供DNS服务查询"
+            },
+            {
+                "type": "tips",
+                "helpText": "请遵守所在地法律法规，此程序仅用于本地局域网"
+            },
+            {
+                "type": "switch",
+                "field": "wizard_agree_terms",
+                "label": "我已阅读并同意并遵守上述协议",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "请同意"
+                    }
+                ]
+            }
+        ]
+    },
     {
         "stepTitle": "运行配置",
         "items": [
             {
-                "type": "tips",
-                "helpText": "运行配置都使用15555端口，超管账号admin， 超管密码：admin666"
-            },
-            {
-                "type": "tips",
-                "helpText": "国内优化配置，增加额外设置：DNS设置、DNS广告黑名单"
+                "type": "switch",
+                "field": "wizard_coverage_config",
+                "label": "强制覆盖原先配置(原先安装过，卸载时保留的配置)",
+                "initValue": "true"
             },
             {
                 "type": "select",
@@ -25,6 +47,14 @@
                         "value": "inner"
                     }
                 ]
+            },
+            {
+                "type": "tips",
+                "helpText": "国内优化配置，增加额外设置：DNS设置、DNS广告黑名单"
+            },
+            {
+                "type": "tips",
+                "helpText": "开启强制覆盖原先配置 或 没有原先配置 才有效"
             }
         ]
     }, 

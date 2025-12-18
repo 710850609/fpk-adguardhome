@@ -1,7 +1,7 @@
 appname               = AdGuardHome
-version=0.107.71-build-0.1
+version=0.107.71-build-0.2
 display_name          = AdGuardHome
-desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br></br> 1 程序默认使用15555端口</br> 2 支持飞牛原生设置账号、密码</br> 3 可选择国内适用配置(合适新手使用)
+desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br></br>默认使用15555端口(管理服务), 53端口(DNS服务)</br>
 arch                  = x86_64
 source                = thirdparty
 maintainer            = AdguardTeam
