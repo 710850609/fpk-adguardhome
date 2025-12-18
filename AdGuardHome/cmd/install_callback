@@ -68,11 +68,15 @@ if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; th
     set_yaml "dns.upstream_dns[13]" "https://dns.cloudflare.com/dns-query" "${CFG_FILE}"
     set_yaml "dns.upstream_dns[14]" "'# 兜底纯 UDP(断网也能解析)'" "${CFG_FILE}"
     set_yaml "dns.upstream_dns[15]" "223.5.5.5" "${CFG_FILE}"
+    set_yaml "dns.upstream_dns[16]" "2400:3200::1" "${CFG_FILE}"
 
     log_msg "设置bootstrap_dns"
     set_yaml "dns.bootstrap_dns" "[]" "${CFG_FILE}"
     set_yaml "dns.bootstrap_dns[0]" "223.5.5.5" "${CFG_FILE}"
     set_yaml "dns.bootstrap_dns[1]" "119.29.29.29" "${CFG_FILE}"
+    set_yaml "dns.bootstrap_dns[2]" "2400:3200::1" "${CFG_FILE}"
+    set_yaml "dns.bootstrap_dns[3]" "'2402:4e00::'" "${CFG_FILE}"
+    set_yaml "dns.bootstrap_dns[4]" "2001:dc7:1000::1" "${CFG_FILE}"
 
     log_msg "设置filters"
     set_yaml "filters" "[]" "${CFG_FILE}"

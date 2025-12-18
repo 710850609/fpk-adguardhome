@@ -1,4 +1,4 @@
-fpk_version="build-0.3"
+fpk_version="build-0.4"
 adh_version="0.107.71"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
 build_all="$1"
