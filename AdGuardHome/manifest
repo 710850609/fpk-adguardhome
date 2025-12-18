@@ -1,5 +1,5 @@
 appname               = AdGuardHome
-version=0.107.71-build-0.2
+version=0.107.71-build-0.3
 display_name          = AdGuardHome
 desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br></br>默认使用15555端口(管理服务), 53端口(DNS服务)</br>
 arch                  = x86_64
