@@ -60,10 +60,17 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "prerelease=${PRE}" >> $GITHUB_OUTPUT
 
+      # - name: Upload .fpk as workflow artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: fpk
+      #     path: ${{ steps.package.outputs.fpk }}
+
       - name: Create GitHub Release and upload asset
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.package.outputs.tag }}
           name: Release ${{ steps.package.outputs.tag }}
-          files: "*.fpk"
+          artifact: "*.fpk"
           prerelease: ${{ steps.package.outputs.prerelease }}
+          skipIfReleaseExists: true
