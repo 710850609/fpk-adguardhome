@@ -81,12 +81,17 @@ if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; th
     set_yaml "dns.bootstrap_dns[3]" "'2402:4e00::'" "${CFG_FILE}"
     set_yaml "dns.bootstrap_dns[4]" "2001:dc7:1000::1" "${CFG_FILE}"
 
-
     log_msg "设置upstream_mode"
     set_yaml "dns.upstream_mode" "parallel" "${CFG_FILE}"
 
     log_msg "设置upstream_timeout"
     set_yaml "dns.upstream_timeout" "5s" "${CFG_FILE}"
+
+    log_msg "设置cache_ttl_min"
+    set_yaml "dns.cache_ttl_min" "300" "${CFG_FILE}"
+
+    log_msg "设置cache_ttl_max"
+    set_yaml "dns.cache_ttl_max" "86400" "${CFG_FILE}"
 
     log_msg "创建用户自定义白名单文件"
     touch "${USER_FILTER_PATH}/dns-whitelist.txt"
