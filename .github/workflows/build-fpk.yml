@@ -57,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fpk
-          path: ${{ steps.package.outputs.fpk }}
+          path: "*.fpk"
 
       - name: Create GitHub Release and upload asset
         uses: ncipollo/release-action@v1
