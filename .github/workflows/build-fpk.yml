@@ -54,7 +54,7 @@ jobs:
           echo "prerelease=${PRE}" >> $GITHUB_OUTPUT
 
       - name: Upload .fpk as workflow artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fpk
           path: ${{ steps.package.outputs.fpk }}
