@@ -22,9 +22,15 @@ def set_yaml_value(file_path: str, path: str, value_str: str) -> bool:
         print(f"加载文件失败: {e}", file=sys.stderr)
         return False
     
-    # 解析值
-    parser = YAML(typ='safe')
-    value = parser.load(value_str)
+    if value_str.startswith("'") and value_str.endswith("'"):
+        # 单引号包裹 → 纯字符串，去掉首尾引号后直接当 str
+        value = value_str[1:-1]
+    elif value_str == '[]':
+        value = []
+    else:
+        # 解析值
+        parser = YAML(typ='safe')
+        value = parser.load(value_str)
     
     # 解析路径
     if path.startswith('$.'):

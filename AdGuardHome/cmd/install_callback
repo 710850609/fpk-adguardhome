@@ -6,6 +6,7 @@ LOG_FILE="${TRIM_PKGVAR}/info.log"
 DEFAULT_CFG_FILE="${TRIM_APPDEST}/bin/AdGuardHome.yaml"
 CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
 SCRIPT_PATH="${TRIM_APPDEST}/script"
+USER_FILTER_PATH="${TRIM_PKGVAR}/userfilters"
 
 log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
@@ -48,6 +49,8 @@ else
     log_msg "已存在配置文件，跳过设置配置"
 fi
 
+log_msg "创建用户自定义目录"
+mkdir -p "${USER_FILTER_PATH}"
 if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; then
     log_msg "安装时，用户选择配置: ${wizard_setting_type}"
     log_msg "设置upstream_dns"
@@ -78,24 +81,55 @@ if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; th
     set_yaml "dns.bootstrap_dns[3]" "'2402:4e00::'" "${CFG_FILE}"
     set_yaml "dns.bootstrap_dns[4]" "2001:dc7:1000::1" "${CFG_FILE}"
 
+
+    log_msg "设置upstream_mode"
+    set_yaml "dns.upstream_mode" "parallel" "${CFG_FILE}"
+
+    log_msg "设置upstream_timeout"
+    set_yaml "dns.upstream_timeout" "5s" "${CFG_FILE}"
+
+    log_msg "创建用户自定义白名单文件"
+    touch "${USER_FILTER_PATH}/dns-whitelist.txt"
+    set_yaml "whitelist_filters" "[]" "${CFG_FILE}"
+    set_yaml "whitelist_filters[0].id" "1" "${CFG_FILE}"
+    set_yaml "whitelist_filters[0].enabled" "true" "${CFG_FILE}"
+    set_yaml "whitelist_filters[0].name" "本地白名单" "${CFG_FILE}"
+    set_yaml "whitelist_filters[0].url" "${USER_FILTER_PATH}/dns-whitelist.txt" "${CFG_FILE}"
+
+    log_msg "创建用户自定义黑名单文件"
+    touch "${USER_FILTER_PATH}/dns-balcklist.txt"
+
     log_msg "设置filters"
     set_yaml "filters" "[]" "${CFG_FILE}"
-    set_yaml "filters[0].id" "4" "${CFG_FILE}"
+    set_yaml "filters[0].id" "5" "${CFG_FILE}"
     set_yaml "filters[0].enabled" "true" "${CFG_FILE}"
-    set_yaml "filters[0].name" "大全版本" "${CFG_FILE}"
-    set_yaml "filters[0].url" "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt" "${CFG_FILE}"
-    set_yaml "filters[1].id" "3" "${CFG_FILE}"
+    set_yaml "filters[0].name" "本地黑名单" "${CFG_FILE}"
+    set_yaml "filters[0].url" "${USER_FILTER_PATH}/dns-balcklist.txt" "${CFG_FILE}"
+    set_yaml "filters[1].id" "4" "${CFG_FILE}"
     set_yaml "filters[1].enabled" "true" "${CFG_FILE}"
-    set_yaml "filters[1].name" "国内视频/APP广告" "${CFG_FILE}"
-    set_yaml "filters[1].url" "https://anti-ad.net/adguard.txt" "${CFG_FILE}"
-    set_yaml "filters[2].id" "1" "${CFG_FILE}"
-    set_yaml "filters[2].enabled" "false" "${CFG_FILE}"
-    set_yaml "filters[2].name" "AdGuard DNS filter" "${CFG_FILE}"
-    set_yaml "filters[2].url" "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt" "${CFG_FILE}"
+    set_yaml "filters[1].name" "大全版本" "${CFG_FILE}"
+    set_yaml "filters[1].url" "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt" "${CFG_FILE}"
+    set_yaml "filters[2].id" "3" "${CFG_FILE}"
+    set_yaml "filters[2].enabled" "true" "${CFG_FILE}"
+    set_yaml "filters[2].name" "国内视频/APP广告" "${CFG_FILE}"
+    set_yaml "filters[2].url" "https://anti-ad.net/adguard.txt" "${CFG_FILE}"
     set_yaml "filters[3].id" "2" "${CFG_FILE}"
     set_yaml "filters[3].enabled" "false" "${CFG_FILE}"
     set_yaml "filters[3].name" "AdAway Default Blocklist" "${CFG_FILE}"
     set_yaml "filters[3].url" "https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt" "${CFG_FILE}"
+    set_yaml "filters[4].id" "1" "${CFG_FILE}"
+    set_yaml "filters[4].enabled" "false" "${CFG_FILE}"
+    set_yaml "filters[4].name" "AdGuard DNS filter" "${CFG_FILE}"
+    set_yaml "filters[4].url" "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt" "${CFG_FILE}"
+
+    log_msg "增加自定义放行指定IP写法"
+    set_yaml "user_rules" "[]" "${CFG_FILE}"
+    set_yaml "user_rules[0]" "'# 放行指定IP写法参考: 如放行192.168.1.1'" "${CFG_FILE}"
+    set_yaml "user_rules[1]" "'# @@||*.*^\$client='192.168.1.1'" "${CFG_FILE}"
+
+    # 设置自定义过滤
+    log_msg "设置自定义过滤: ${USER_FILTER_PATH}/*"
+    set_yaml "filtering.safe_fs_patterns[0]" "${USER_FILTER_PATH}/*" "${CFG_FILE}"
 fi
 
 
@@ -108,12 +142,6 @@ set_yaml "users[0].name" "${wizard_admin_name}" "${CFG_FILE}"
 password=$(encrypt_password "${wizard_admin_password}")
 log_msg "设置管理员密码: ${wizard_admin_password}"
 set_yaml "users[0].password" "${password}" "${CFG_FILE}"
-
-
-# 设置自定义过滤
-filter_path="${TRIM_APPDEST_VOL}/@appdata/AdGuardHome/userfilters/*"
-log_msg "设置自定义过滤: ${filter_path}"
-set_yaml "filtering.safe_fs_patterns[0]" "${filter_path}" "${CFG_FILE}"
 
 
 exit 0
