@@ -21,13 +21,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      # - name: Install Python requirements (if any)
-      #   run: |
-      #     if [ -f script/requirements.txt ]; then
-      #       python -m pip install --upgrade pip
-      #       pip install -r script/requirements.txt || true
-      #     fi
-
       - name: Run build package
         run: |
           echo "下载fnpack"
@@ -60,17 +53,17 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "prerelease=${PRE}" >> $GITHUB_OUTPUT
 
-      # - name: Upload .fpk as workflow artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: fpk
-      #     path: ${{ steps.package.outputs.fpk }}
+      - name: Upload .fpk as workflow artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: fpk
+          path: ${{ steps.package.outputs.fpk }}
 
       - name: Create GitHub Release and upload asset
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.package.outputs.tag }}
           name: Release ${{ steps.package.outputs.tag }}
-          artifact: "*.fpk"
+          artifact: fpk
           prerelease: ${{ steps.package.outputs.prerelease }}
-          skipIfReleaseExists: false
+          skipIfReleaseExists: true
