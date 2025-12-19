@@ -32,6 +32,9 @@ jobs:
         run: |
           echo "下载fnpack"
           wget -O fnpack "https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64"
+          chmod +x fnpack
+          # Add downloaded fnpack to PATH for subsequent steps
+          echo "${PWD}/fnpack" >> $GITHUB_PATH
           echo "开始构建fpk"
           chmod +x ./build.sh || true
           ./build.sh all
