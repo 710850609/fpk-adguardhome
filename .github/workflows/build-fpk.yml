@@ -62,5 +62,5 @@ jobs:
         with:
           tag: ${{ steps.package.outputs.tag }}
           name: Release ${{ steps.package.outputs.tag }}
-          files: ${{ steps.package.outputs.fpk }}
+          files: "*.fpk"
           prerelease: ${{ steps.package.outputs.prerelease }}
