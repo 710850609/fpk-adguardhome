@@ -4,3 +4,4 @@ AdGuardHome/app/script
 script/.venv
 script/wheels
 AdGuardHome-linux-amd64
+bin/act

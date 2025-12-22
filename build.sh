@@ -46,8 +46,7 @@ echo "开始打包 AdGuardHome.fpk"
 fnpack build --directory AdGuardHome/
 
 
-# fpk_name="AdGuardHome-${app_version}.fpk"
-# rm -f "${fpk_name}"
-# mv AdGuardHome.fpk "${fpk_name}"
-# echo "打包完成: ${fpk_name}"
-echo "打包完成"
+fpk_name="AdGuardHome-${app_version}.fpk"
+rm -f "${fpk_name}"
+mv AdGuardHome.fpk "${fpk_name}"
+echo "打包完成: ${fpk_name}"
