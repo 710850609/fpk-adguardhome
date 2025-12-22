@@ -21,13 +21,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run build package
+      - name: Download and setup fnpack
         run: |
           echo "下载fnpack"
           wget -O fnpack "https://static2.fnnas.com/fnpack/fnpack-1.0.4-linux-amd64"
           chmod +x fnpack
-          # Add downloaded fnpack to PATH for subsequent steps
-          echo "${PWD}/fnpack" >> $GITHUB_PATH
+          # 将 fnpack 移动到可执行目录
+          sudo mv fnpack /usr/local/bin/
+          echo "验证 fnpack 安装:"
+          fnpack --version || echo "fnpack version check"
+
+      - name: Run build package
+        run: |
           echo "开始构建fpk"
           chmod +x ./build.sh || true
           ./build.sh all
@@ -50,7 +55,7 @@ jobs:
           mkdir -p release
           
           # 复制到release目录
-          cp "$FPK_FILE" "release/$FPK_FILE"
+          cp "$FPK_FILE" "release/AdGuardHome.fpk"
           
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF##*/}"
