@@ -4,11 +4,11 @@
         "items": [
             {
                 "type": "tips",
-                "helpText": "本程序需在 NAS 以 root 身份运行，仅用于获取监听 53 端口的系统权限，以提供DNS服务查询"
+                "helpText": "本程序需在以root身份运行，仅用于获取监听DNS默认53端口的系统权限，以提供DNS服务查询"
             },
             {
                 "type": "tips",
-                "helpText": "请遵守所在地法律法规，此程序仅用于本地局域网"
+                "helpText": "请遵守所在地法律法规，合理使用本软件"
             },
             {
                 "type": "switch",
@@ -59,8 +59,12 @@
         ]
     }, 
     {
-        "stepTitle": "管理员账户",
+        "stepTitle": "运行参数",
         "items": [
+            {
+                "type": "tips",
+                "helpText": "请求再次确认以下参数，无其他特殊要求，请使用默认值"
+            },
             {
                 "type": "text",
                 "field": "wizard_admin_name",
@@ -88,6 +92,22 @@
                     {
                         "min": 4,
                         "message": "密码长度不能少于4位"
+                    }
+                ]
+            },
+            {
+                "type": "text",
+                "field": "adg_mgr_port",
+                "label": "管理服务端口",
+                "initValue": "15555",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "管理服务端口"
+                    },
+                    {
+                        "pattern": "^[0-9]+$",
+                        "message": "管理服务端口必须是数字"
                     }
                 ]
             }

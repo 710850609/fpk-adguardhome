@@ -2,7 +2,5 @@
     "defaults":
     {
         "run-as": "root"
-    },
-    "username": "AdGuardHome",
-    "groupname": "AdGuardHome_group"
+    }
 }

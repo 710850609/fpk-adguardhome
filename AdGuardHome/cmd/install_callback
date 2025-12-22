@@ -22,12 +22,15 @@ set_yaml() {
     "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
 }
 
+
+log_msg "install_callback脚本执行中..."
+
 # 旧数据清理
-overwrite_cfg="false"
+update_cfg="false"
 if [ "${wizard_coverage_config}" == "true" ]; then
     bash -c "rm -rf ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
     log_msg "安装时，用户选择 覆盖已有配置，清理已有配置"
-    overwrite_cfg="true"
+    update_cfg="true"
 fi
 
 mkdir -p "${TRIM_PKGVAR}"
@@ -44,14 +47,14 @@ bash -c "${SCRIPT_PATH}/.venv/bin/pip install --no-index --find-links=${SCRIPT_P
 if [ ! -f "${CFG_FILE}" ]; then
     log_msg "不存在配置文件，拷贝默认配置"
     bash -c "cp -f ${DEFAULT_CFG_FILE} ${CFG_FILE}" >> ${LOG_FILE} 2>&1
-    overwrite_cfg="true"
+    update_cfg="true"
 else
     log_msg "已存在配置文件，跳过设置配置"
 fi
 
 log_msg "创建用户自定义目录"
 mkdir -p "${USER_FILTER_PATH}"
-if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; then
+if [[ "${wizard_setting_type}" == "inner" && "${update_cfg}" == "true" ]]; then
     log_msg "安装时，用户选择配置: ${wizard_setting_type}"
     log_msg "设置upstream_dns"
     set_yaml "dns.upstream_dns" "[]" "${CFG_FILE}"
@@ -137,16 +140,23 @@ if [[ "${wizard_setting_type}" == "inner" && "${overwrite_cfg}" == "true" ]]; th
     set_yaml "filtering.safe_fs_patterns[0]" "${USER_FILTER_PATH}/*" "${CFG_FILE}"
 fi
 
-
 # 设置管理员账号
-log_msg "设置管理员账号: ${wizard_admin_name}"
-set_yaml "users[0].name" "${wizard_admin_name}" "${CFG_FILE}"
-
+if [[ "${update_cfg}" == "true" ]]; then
+    log_msg "设置管理员账号: ${wizard_admin_name}"
+    set_yaml "users[0].name" "${wizard_admin_name}" "${CFG_FILE}"
+fi
 
 # 设置管理员密码
-password=$(encrypt_password "${wizard_admin_password}")
-log_msg "设置管理员密码: ${wizard_admin_password}"
-set_yaml "users[0].password" "${password}" "${CFG_FILE}"
+if [[ "${update_cfg}" == "true" ]]; then
+    password=$(encrypt_password "${wizard_admin_password}")
+    log_msg "设置管理员密码: ${wizard_admin_password}"
+    set_yaml "users[0].password" "${password}" "${CFG_FILE}"
+fi
 
+# 设置管理服务端口
+if [[ "${update_cfg}" == "true" ]]; then
+    log_msg "设置管理服务端口: ${adg_mgr_port}"
+    set_yaml "http.address" "0.0.0.0:${adg_mgr_port}" "${CFG_FILE}"
+fi
 
 exit 0
