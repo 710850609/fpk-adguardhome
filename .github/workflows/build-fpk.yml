@@ -28,8 +28,6 @@ jobs:
           chmod +x fnpack
           # 将 fnpack 移动到可执行目录
           sudo mv fnpack /usr/local/bin/
-          echo "验证 fnpack 安装:"
-          fnpack --version || echo "fnpack version check"
 
       - name: Run build package
         run: |
@@ -74,13 +72,6 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "prerelease=${PRE}" >> $GITHUB_OUTPUT
           echo "fpk_path=release/$FPK_FILE" >> $GITHUB_OUTPUT
-
-      - name: List files for debugging
-        run: |
-          echo "当前目录文件:"
-          ls -la
-          echo "release目录文件:"
-          ls -la release/
 
       - name: Upload .fpk as workflow artifact
         uses: actions/upload-artifact@v4
