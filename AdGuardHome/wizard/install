@@ -4,7 +4,7 @@
         "items": [
             {
                 "type": "tips",
-                "helpText": "本程序需在以root身份运行，仅用于获取监听DNS默认53端口的系统权限，以提供DNS服务查询"
+                "helpText": "本程序需在以root身份运行，以支持获取监听DNS默认53端口的系统权限，以提供DNS服务查询"
             },
             {
                 "type": "tips",
@@ -12,7 +12,7 @@
             },
             {
                 "type": "switch",
-                "field": "wizard_agree_terms",
+                "field": "adg_agree_terms",
                 "label": "我已阅读并同意并遵守上述协议",
                 "rules": [
                     {
@@ -28,13 +28,13 @@
         "items": [
             {
                 "type": "switch",
-                "field": "wizard_coverage_config",
+                "field": "adg_coverage_config",
                 "label": "强制覆盖原先配置(原先安装过，卸载时保留的配置)",
                 "initValue": "true"
             },
             {
                 "type": "select",
-                "field": "wizard_setting_type",
+                "field": "adg_setting_type",
                 "label": "运行配置",
                 "initValue": "default",
                 "options": [
@@ -66,8 +66,12 @@
                 "helpText": "请求再次确认以下参数，无其他特殊要求，请使用默认值"
             },
             {
+                "type": "tips",
+                "helpText": "如果不是配合无其他DNS服务，建议不修改DNS服务端口，避免某些路由器或手机等设备无法使用"
+            },
+            {
                 "type": "text",
-                "field": "wizard_admin_name",
+                "field": "adg_admin_name",
                 "label": "管理员账号",
                 "rules": [
                     {
@@ -82,7 +86,7 @@
             },            
             {
                 "type": "password",
-                "field": "wizard_admin_password",
+                "field": "adg_admin_password",
                 "label": "管理员密码",
                 "rules": [
                     {
@@ -108,6 +112,22 @@
                     {
                         "pattern": "^[0-9]+$",
                         "message": "管理服务端口必须是数字"
+                    }
+                ]
+            },
+            {
+                "type": "text",
+                "field": "adg_dns_port",
+                "label": "DNS服务端口",
+                "initValue": "53",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "DNS服务端口"
+                    },
+                    {
+                        "pattern": "^[0-9]+$",
+                        "message": "DNS服务端口必须是数字"
                     }
                 ]
             }

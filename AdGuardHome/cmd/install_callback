@@ -27,7 +27,7 @@ log_msg "install_callback脚本执行中..."
 
 # 旧数据清理
 update_cfg="false"
-if [ "${wizard_coverage_config}" == "true" ]; then
+if [ "${adg_coverage_config}" == "true" ]; then
     bash -c "rm -rf ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
     log_msg "安装时，用户选择 覆盖已有配置，清理已有配置"
     update_cfg="true"
@@ -54,8 +54,8 @@ fi
 
 log_msg "创建用户自定义目录"
 mkdir -p "${USER_FILTER_PATH}"
-if [[ "${wizard_setting_type}" == "inner" && "${update_cfg}" == "true" ]]; then
-    log_msg "安装时，用户选择配置: ${wizard_setting_type}"
+if [[ "${adg_setting_type}" == "inner" && "${update_cfg}" == "true" ]]; then
+    log_msg "安装时，用户选择配置: ${adg_setting_type}"
     log_msg "设置upstream_dns"
     set_yaml "dns.upstream_dns" "[]" "${CFG_FILE}"
     set_yaml "dns.upstream_dns[0]" "'# 国内主用'" "${CFG_FILE}"
@@ -142,14 +142,14 @@ fi
 
 # 设置管理员账号
 if [[ "${update_cfg}" == "true" ]]; then
-    log_msg "设置管理员账号: ${wizard_admin_name}"
-    set_yaml "users[0].name" "${wizard_admin_name}" "${CFG_FILE}"
+    log_msg "设置管理员账号: ${adg_admin_name}"
+    set_yaml "users[0].name" "${adg_admin_name}" "${CFG_FILE}"
 fi
 
 # 设置管理员密码
 if [[ "${update_cfg}" == "true" ]]; then
-    password=$(encrypt_password "${wizard_admin_password}")
-    log_msg "设置管理员密码: ${wizard_admin_password}"
+    password=$(encrypt_password "${adg_admin_password}")
+    log_msg "设置管理员密码: ${adg_admin_password}"
     set_yaml "users[0].password" "${password}" "${CFG_FILE}"
 fi
 
@@ -157,6 +157,12 @@ fi
 if [[ "${update_cfg}" == "true" ]]; then
     log_msg "设置管理服务端口: ${adg_mgr_port}"
     set_yaml "http.address" "0.0.0.0:${adg_mgr_port}" "${CFG_FILE}"
+fi
+
+# 设置DNS服务端口
+if [[ "${update_cfg}" == "true" ]]; then
+    log_msg "设置DNS服务端口: ${adg_dns_port}"
+    set_yaml "dns.port" "${adg_dns_port}" "${CFG_FILE}"
 fi
 
 exit 0

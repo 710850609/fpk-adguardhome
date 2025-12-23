@@ -1,7 +1,7 @@
 appname               = AdGuardHome
-version=0.107.71-build-0.6
+version=0.107.71-7
 display_name          = AdGuardHome
-desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br></br>1 默认使用15555端口(管理服务), 53端口(DNS服务)</br>2 启动服务后，将路由DNS修改为飞牛IP
+desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br></br>使用：启动服务后，将路由DNS修改为飞牛IP
 arch                  = x86_64
 os_min_version        = 1.1.8
 source                = thirdparty
@@ -12,4 +12,4 @@ distributor_url       = https://club.fnnas.com/home.php?mod=space&uid=33130&do=t
 desktop_uidir         = ui
 desktop_applaunchname = AdGuardHome.Application
 service_port          = 53
-checkport             = true
+checkport             = false
