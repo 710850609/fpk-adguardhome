@@ -88,9 +88,11 @@ jobs:
           # 执行构建脚本
           chmod +x ./fnpack.sh 2>/dev/null || true
           chmod +x ./build.sh 2>/dev/null || true
-          ./build.sh build_pre="${PRERELEASE}" arch="${ARCH}" 2>/dev/null || true
+          ./build.sh build_pre="${PRERELEASE}" arch="${ARCH}" 2>/dev/null || true      
           
           # 验证构建结果
+          echo "构建后目录内容: $(pwd)"
+          echo "$(ls -lh)"
           FPK_FILE=$(ls *.fpk 2>/dev/null | head -1)
           if [ -z "$FPK_FILE" ]; then
             echo "错误：未找到.fpk文件"
@@ -110,14 +112,12 @@ jobs:
           # 清理之前的构建文件
           rm -f *.fpk 2>/dev/null || true
           rm -rf release 2>/dev/null || true
-          
-          # 设置环境变量传递给 Docker
-          export PRERELEASE="${{ needs.setup.outputs.prerelease }}"
-          export ARCH="${{ matrix.arch }}"
 
           # 运行 Docker 构建
           docker run --rm \
             --platform ${{ matrix.platform }} \
+            -e "PRERELEASE=${{ needs.setup.outputs.prerelease }}" \
+            -e "ARCH=${{ matrix.arch }}" \
             -v "$PWD:/workspace" \
             -w /workspace \
             ${{ matrix.docker_image }} \
