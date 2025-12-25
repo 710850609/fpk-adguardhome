@@ -49,10 +49,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: linux_amd64
+          - arch: linux-amd64
             docker_image: "amd64/python:3.11"
             platform: "linux/amd64"
-          - arch: linux_arm64
+          - arch: linux-arm64
             docker_image: "arm64v8/python:3.11"
             platform: "linux/arm64/v8"
     
@@ -145,7 +145,7 @@ jobs:
           if [ -f "output/*.fpk" ]; then
             FPK_FILE=$(ls output/*.fpk | head -1)
             mkdir -p release
-            NEW_FPK_NAME="AdGuardHome_${{ matrix.arch }}.fpk"
+            NEW_FPK_NAME="AdGuardHome-${{ matrix.arch }}.fpk"
             if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
               NEW_FPK_NAME="$FPK_FILE"
             fi

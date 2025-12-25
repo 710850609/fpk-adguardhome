@@ -8,6 +8,8 @@ declare -A PARAMS
 # 默认值
 PARAMS[build_all]="false"
 PARAMS[build_pre]="false"
+# linux-amd64, linux-arm64
+PARAMS[arch]="linux-amd64"
 
 # 解析 key=value 格式的参数
 for arg in "$@"; do
@@ -30,16 +32,18 @@ done
 
 build_all="${PARAMS[build_all]}"
 build_pre="${PARAMS[build_pre]}"
-arch="${PARAMS[arch]:-linux_amd64}"
-echo "build_all: ${PARAMS[build_all]}"
-echo "build_pre: ${PARAMS[build_pre]}"
+arch="${PARAMS[arch]}"
+echo "build_all: ${build_all}"
+echo "build_pre: ${build_pre}"
+echo "arch: ${arch}"
 
 
 if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     echo "AdGuardHome 预编译文件不存在: $bin_file, 开始下载预编译版本..."
     proxy_url="https://gh.llkk.cc"
     rm -f AdGuardHome.tar.gz
-    download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${arch}.tar.gz"
+    arch_type=${arch//-/_}
+    download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${arch_type}.tar.gz"
     # download_url="${proxy_url}/${download_url}"
     wget -O AdGuardHome.tar.gz "${download_url}"
     echo "下载完成，开始解压文件到 $bin_file 目录"
@@ -83,7 +87,7 @@ echo "开始打包 AdGuardHome.fpk"
 fnpack build --directory AdGuardHome/
 
 
-fpk_name="AdGuardHome_${arch}-${fpk_version}.fpk"
+fpk_name="AdGuardHome-${arch}-${fpk_version}.fpk"
 rm -f "${fpk_name}"
 mv AdGuardHome.fpk "${fpk_name}"
 echo "打包完成: ${fpk_name}"
