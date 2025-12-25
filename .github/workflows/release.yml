@@ -141,19 +141,22 @@ jobs:
         run: |
           echo "准备 ${{ matrix.arch }} 架构的产物"
           
-          # 从临时输出目录获取文件
-          if [ -f "output/*.fpk" ]; then
-            FPK_FILE=$(ls output/*.fpk | head -1)
-            mkdir -p release
+          FPK_FILE=$(ls *.fpk 2>/dev/null | head -1)
+          if [ -z "$FPK_FILE" ]; then
+            echo "错误：未找到.fpk文件"
+            ls -la
+            exit 1
+          fi
+
+          mkdir -p release
+          if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
+            cp "$FPK_FILE" "release/$FPK_FILE"
+            echo "准备完成: $FPK_FILE"
+          else
+            # 正式版去除版本号
             NEW_FPK_NAME="AdGuardHome-${{ matrix.arch }}.fpk"
-            if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
-              NEW_FPK_NAME="$FPK_FILE"
-            fi
             cp "$FPK_FILE" "release/$NEW_FPK_NAME"
-            
-            # 验证文件
-            echo "产物信息:"
-            echo "$(ls -lh release/)"
+            echo "准备完成: $NEW_FPK_NAME"
           fi
 
       - name: Upload artifact
