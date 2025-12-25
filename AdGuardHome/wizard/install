@@ -4,7 +4,7 @@
         "items": [
             {
                 "type": "tips",
-                "helpText": "本程序需在以root身份运行，以支持获取监听DNS默认53端口的系统权限，以提供DNS服务查询"
+                "helpText": "本程序需在以root身份运行，以获取监听DNS默认53端口的系统权限，提供DNS服务查询"
             },
             {
                 "type": "tips",

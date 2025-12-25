@@ -1,0 +1,210 @@
+name: release fpk
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:  
+  # 主 job，负责设置变量
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.set-tag.outputs.tag }}
+      prerelease: ${{ steps.set-tag.outputs.prerelease }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set tag and prerelease info
+        id: set-tag
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF##*/}"
+          else
+            TAG="run-${GITHUB_RUN_NUMBER}"
+          fi
+          
+          if [[ "$TAG" == run-* ]] || [[ "${TAG}" == *dev* ]] || [[ "${TAG}" == *pre* ]] || [[ "${TAG}" == *beta* ]]; then
+            PRE=true
+          else
+            PRE=false
+          fi
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "prerelease=$PRE" >> $GITHUB_OUTPUT
+
+  # 所有架构都使用 Docker 在 x86 上构建
+  build-arch:
+    needs: 
+      - setup
+    runs-on: ubuntu-latest  # 所有架构都在 x86 上运行
+    strategy:
+      matrix:
+        include:
+          - arch: linux_amd64
+            docker_image: "amd64/python:3.11"
+            platform: "linux/amd64
+          - arch: linux_arm64
+            docker_image: "arm64v8/python:3.11"
+            platform: "linux/arm64/v8"
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup QEMU for ARM emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{ matrix.platform }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create Docker build script
+        run: |
+          echo "目标架构: ${{ matrix.arch }}"
+          cat > docker-build.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          echo "开始在容器内构建..."
+          echo "当前架构: $(uname -m)"
+          echo "Python 版本: $(python3 --version)"
+          echo "当前目录$(pwd)"
+          echo "当前资源$(ls -la)"
+          
+          # 更新系统并安装依赖
+          apt-get update
+          apt-get install -y \
+            rsync \
+            python3-pip
+          
+          # 执行构建脚本
+          chmod +x ./fnpack.sh 2>/dev/null || true
+          chmod +x ./build.sh 2>/dev/null || true
+          ./build.sh build_pre="${PRERELEASE}" arch="${matrix.arch}" 2>/dev/null || true
+          
+          # 验证构建结果
+          FPK_FILE=$(ls *.fpk 2>/dev/null | head -1)
+          if [ -z "$FPK_FILE" ]; then
+            echo "错误：未找到.fpk文件"
+            ls -la
+            exit 1
+          fi
+          
+          echo "构建完成: $FPK_FILE"
+          EOF
+          
+          chmod +x docker-build.sh
+
+      - name: Build in Docker container
+        run: |
+          echo "使用 Docker 构建 ${{ matrix.arch }} 架构"
+          
+          # 清理之前的构建文件
+          rm -f *.fpk 2>/dev/null || true
+          rm -rf release 2>/dev/null || true
+          
+          # 设置环境变量传递给 Docker
+          export PRERELEASE="${{ needs.setup.outputs.prerelease }}"
+
+          # 运行 Docker 构建
+          docker run --rm \
+            --platform ${{ matrix.platform }} \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            ${{ matrix.docker_image }} \
+            /bin/bash -c "
+              cd /workspace
+              ./docker-build.sh
+              
+              # 复制构建产物到宿主机可访问的位置
+              mkdir -p /output
+              FPK_FILE=\$(ls *.fpk 2>/dev/null | head -1)
+              if [ -n \"\$FPK_FILE\" ]; then
+                cp \"\$FPK_FILE\" /output/
+                echo \"已复制产物: \$FPK_FILE\"
+              else
+                echo '错误：未找到构建产物'
+                exit 1
+              fi
+            "
+
+      - name: Prepare artifact
+        run: |
+          echo "准备 ${{ matrix.arch }} 架构的产物"
+          
+          # 从临时输出目录获取文件
+          if [ -f "output/*.fpk" ]; then
+            FPK_FILE=$(ls output/*.fpk | head -1)
+            mkdir -p release
+            NEW_FPK_NAME="AdGuardHome_${{ matrix.arch }}.fpk"
+            if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
+              NEW_FPK_NAME="$FPK_FILE"
+            fi
+            cp "$FPK_FILE" "release/$NEW_FPK_NAME"
+            
+            # 验证文件
+            echo "产物信息:"
+            echo "$(ls -lh release/)"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpk_${{ matrix.arch }}
+          path: release/
+          retention-days: 1
+
+      - name: Cleanup
+        run: |
+          rm -rf output release *.fpk docker-build.sh 2>/dev/null || true
+
+  create-release:
+    needs: 
+      - setup
+      - build-arch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release directory
+        run: |
+          mkdir -p combined-release
+    
+      - name: Download amd64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fpk_linux_amd64
+          path: combined-release
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fpk_linux_arm64
+          path: combined-release
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.setup.outputs.tag }}
+          name: ${{ needs.setup.outputs.tag }}
+          artifacts: "combined-release/*"
+          prerelease: ${{ needs.setup.outputs.prerelease }}
+          skipIfReleaseExists: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release summary
+        if: always()
+        run: |
+          echo "=== 发布总结 ==="
+          echo "版本: ${{ needs.setup.outputs.tag }}"
+          echo "预发布: ${{ needs.setup.outputs.prerelease }}"
+          echo "包含的文件:"
+          ls -la combined-release/
+          echo "================"

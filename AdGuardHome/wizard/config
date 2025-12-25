@@ -1,0 +1,58 @@
+[
+    {
+        "stepTitle": "运行参数",
+        "items": [
+            {
+                "type": "tips",
+                "helpText": "如果不是配合无其他DNS服务，建议不修改DNS服务端口，避免某些路由器或手机等设备无法使用"
+            },
+            {
+                "type": "password",
+                "field": "adg_admin_password",
+                "label": "管理员密码",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "请输入管理员密码"
+                    },
+                    {
+                        "min": 4,
+                        "message": "密码长度不能少于4位"
+                    }
+                ]
+            },
+            {
+                "type": "text",
+                "field": "adg_mgr_port",
+                "label": "管理服务端口",
+                "initValue": "15555",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "管理服务端口"
+                    },
+                    {
+                        "pattern": "^[0-9]+$",
+                        "message": "管理服务端口必须是数字"
+                    }
+                ]
+            },
+            {
+                "type": "text",
+                "field": "adg_dns_port",
+                "label": "DNS服务端口",
+                "initValue": "53",
+                "rules": [
+                    {
+                        "required": true,
+                        "message": "DNS服务端口"
+                    },
+                    {
+                        "pattern": "^[0-9]+$",
+                        "message": "DNS服务端口必须是数字"
+                    }
+                ]
+            }
+        ]
+    }
+]

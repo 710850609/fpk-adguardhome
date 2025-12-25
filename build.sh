@@ -1,20 +1,54 @@
-fpk_version="7"
+buidl_version="7"
 adh_version="0.107.71"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
-build_all="$1"
+
+
+declare -A PARAMS
+
+# 默认值
+PARAMS[build_all]="false"
+PARAMS[build_pre]="false"
+
+# 解析 key=value 格式的参数
+for arg in "$@"; do
+  if [[ "$arg" == *=* ]]; then
+    key="${arg%%=*}"
+    value="${arg#*=}"
+    PARAMS["$key"]="$value"
+  else
+    # 处理标志参数
+    case "$arg" in
+      --pre)
+        PARAMS[pre]="true"
+        ;;
+      *)
+        echo "忽略未知参数: $arg"
+        ;;
+    esac
+  fi
+done
+
+build_all="${PARAMS[build_all]}"
+build_pre="${PARAMS[build_pre]}"
+arch="${PARAMS[arch]:-linux_amd64}"
+echo "build_all: ${PARAMS[build_all]}"
+echo "build_pre: ${PARAMS[build_pre]}"
+
 
 if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     echo "AdGuardHome 预编译文件不存在: $bin_file, 开始下载预编译版本..."
     proxy_url="https://gh.llkk.cc"
-    rm -f AdGuardHome-linux-amd64.tar.gz
-    wget -O AdGuardHome-linux-amd64.tar.gz "${proxy_url}/https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_linux_amd64.tar.gz"
+    rm -f AdGuardHome.tar.gz
+    download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${arch}.tar.gz"
+    # download_url="${proxy_url}/${download_url}"
+    wget -O AdGuardHome.tar.gz "${download_url}"
     echo "下载完成，开始解压文件到 $bin_file 目录"
-    mkdir AdGuardHome-linux-amd64
-    tar -xzf AdGuardHome-linux-amd64.tar.gz -C AdGuardHome-linux-amd64
+    mkdir AdGuardHome-dist
+    tar -xzf AdGuardHome-linux-amd64.tar.gz -C AdGuardHome-dist
     rm -f "$bin_file"
-    mv AdGuardHome-linux-amd64/AdGuardHome/AdGuardHome "$bin_file"
+    mv AdGuardHome-dist/AdGuardHome/AdGuardHome "$bin_file"
     # echo "清理下载数据"
-    rm -rf AdGuardHome-linux-amd64
+    rm -rf AdGuardHome-dist
 fi
 
 
@@ -38,15 +72,18 @@ rm -rf  "${app_script_path}"
 rsync -a --exclude='.venv'  script/  "${app_script_path}"
 
 
-app_version="${adh_version}-${fpk_version}"
-sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${app_version}|" 'AdGuardHome/manifest'
-echo "设置 FPK 版本号为: ${app_version}"
+fpk_version="${adh_version}-${buidl_version}"
+if [ "$build_pre" == 'true' ];then 
+    fpk_version="${fpk_version}-pre"
+fi
+sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${fpk_version}|" 'AdGuardHome/manifest'
+echo "设置 FPK 版本号为: ${fpk_version}"
 
 echo "开始打包 AdGuardHome.fpk"
 fnpack build --directory AdGuardHome/
 
 
-fpk_name="AdGuardHome-${app_version}.fpk"
+fpk_name="AdGuardHome_${arch}-${fpk_version}.fpk"
 rm -f "${fpk_name}"
 mv AdGuardHome.fpk "${fpk_name}"
 echo "打包完成: ${fpk_name}"
