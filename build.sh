@@ -1,4 +1,4 @@
-buidl_version="7"
+buidl_version="8"
 adh_version="0.107.71"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
 

@@ -159,7 +159,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fpk_${{ matrix.arch }}
+          name: fpk-${{ matrix.arch }}
           path: release/
           retention-days: 1
 
@@ -180,13 +180,13 @@ jobs:
       - name: Download amd64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: fpk_linux_amd64
+          name: fpk-linux-amd64
           path: combined-release
 
       - name: Download arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: fpk_linux_arm64
+          name: fpk-linux-arm64
           path: combined-release
 
       - name: Create GitHub Release
