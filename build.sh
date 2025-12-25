@@ -84,7 +84,8 @@ sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${fpk_version}|" 'AdGuardH
 echo "设置 FPK 版本号为: ${fpk_version}"
 
 echo "开始打包 AdGuardHome.fpk"
-fnpack build --directory AdGuardHome/
+# fnpack build --directory AdGuardHome/
+./fnpack.sh build --directory AdGuardHome || { echo "打包失败"; exit 1; }
 
 
 fpk_name="AdGuardHome-${arch}-${fpk_version}.fpk"
