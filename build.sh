@@ -1,5 +1,11 @@
 build_version=9
-adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
+# adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
+set -x
+adh_version=$(curl -v --max-time 30 https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest 2>&1)
+echo "curl原始返回=$adh_version" >&2
+adh_version=$(echo "$adh_version" | jq -r .tag_name 2>&1 | sed 's/^v//')
+echo "最终adh_version=$adh_version" >&2
+
 bin_file="AdGuardHome/app/bin/AdGuardHome"
 
 
