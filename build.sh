@@ -61,7 +61,7 @@ if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     wget -O AdGuardHome.tar.gz "${download_url}"
     echo "下载完成，开始解压文件到 $bin_file 目录"
     mkdir AdGuardHome-dist
-    tar -xzf AdGuardHome-linux-amd64.tar.gz -C AdGuardHome-dist
+    tar -xzf AdGuardHome.tar.gz -C AdGuardHome-dist
     rm -f "$bin_file"
     mv AdGuardHome-dist/AdGuardHome/AdGuardHome "$bin_file"
     # echo "清理下载数据"
