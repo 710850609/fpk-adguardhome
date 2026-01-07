@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.set-tag.outputs.tag }}
+      release_version: ${{ steps.set-tag.outputs.release_version }}
       prerelease: ${{ steps.set-tag.outputs.prerelease }}
     steps:
       - name: Checkout repository
@@ -28,6 +29,10 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF##*/}"
+          elif [[ "${GITHUB_REF}" == refs/heads/main ]]; then
+            AdgVersion=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
+            BuildVersion=$(sed -n 's/^[[:space:]]*build_version[[:space:]]*=[[:space:]]*\([^#[:space:]]*\).*/\1/p' "build.sh" | head -n1)
+            TAG="release/${AdgVersion}-${BuildVersion}"
           else
             TAG="run-${GITHUB_RUN_NUMBER}"
           fi
@@ -39,6 +44,7 @@ jobs:
           fi
           
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "release_version=$AdgVersion-$BuildVersion" >> $GITHUB_OUTPUT
           echo "prerelease=$PRE" >> $GITHUB_OUTPUT
 
   # 所有架构都使用 Docker 在 x86 上构建
@@ -195,8 +201,8 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
+          name: ${{ needs.setup.outputs.release_version }}
           tag: ${{ needs.setup.outputs.tag }}
-          name: ${{ needs.setup.outputs.tag }}
           artifacts: "combined-release/*"
           prerelease: ${{ needs.setup.outputs.prerelease }}
           skipIfReleaseExists: true
@@ -206,7 +212,8 @@ jobs:
         if: always()
         run: |
           echo "=== 发布总结 ==="
-          echo "版本: ${{ needs.setup.outputs.tag }}"
+          echo "版本: ${{ needs.setup.outputs.release_version }}"
+          echo "构建分支: ${{ needs.setup.outputs.tag }}"
           echo "预发布: ${{ needs.setup.outputs.prerelease }}"
           echo "包含的文件:"
           ls -la combined-release/

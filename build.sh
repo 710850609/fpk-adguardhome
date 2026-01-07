@@ -1,5 +1,5 @@
-buidl_version="8"
-adh_version="0.107.71"
+build_version=9
+adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
 bin_file="AdGuardHome/app/bin/AdGuardHome"
 
 
@@ -38,6 +38,18 @@ echo "build_pre: ${build_pre}"
 echo "arch: ${arch}"
 
 
+if [ -f "${bin_file}" ];then 
+    # 读已下载的版本
+    cuVersion=$(./${bin_file} --version | sed -n 's/AdGuard Home, version v//p')
+    echo "已下载源码版本: $cuVersion"
+    echo "最新版本: $adh_version"
+    if [[ "$cuVersion" < "$adh_version" ]]; then
+        echo "已下载源码版本小于最新版本，删除后重新下载"
+        rm -rf ${bin_file}
+    else
+        echo "已下载版本大于等于目标版本，无需重新下载"
+    fi
+fi
 if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     echo "AdGuardHome 预编译文件不存在: $bin_file, 开始下载预编译版本..."
     proxy_url="https://gh.llkk.cc"
@@ -76,7 +88,7 @@ rm -rf  "${app_script_path}"
 rsync -a --exclude='.venv'  script/  "${app_script_path}"
 
 
-fpk_version="${adh_version}-${buidl_version}"
+fpk_version="${adh_version}-${build_version}"
 if [ "$build_pre" == 'true' ];then 
     fpk_version="${fpk_version}-pre"
 fi

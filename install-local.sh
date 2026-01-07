@@ -1,1 +1,1 @@
-rm -rf /vol1/@appdata/AdGuardHome && cd AdGuardHome && appcenter-cli install-local --env ../config.env && cd ../
+cd AdGuardHome && sudo appcenter-cli install-local --env ../config.env && cd ../

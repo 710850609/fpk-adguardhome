@@ -2,4 +2,95 @@
 
 ### This script is called after the user change environment variables in application setting page.
 
+LOG_FILE="${TRIM_PKGVAR}/info.log"
+DEFAULT_CFG_FILE="${TRIM_APPDEST}/bin/AdGuardHome.yaml"
+CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
+SCRIPT_PATH="${TRIM_APPDEST}/script"
+USER_FILTER_PATH="${TRIM_PKGVAR}/userfilters"
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
+}
+
+encrypt_password() {
+    # python 脚本只输出哈希；stderr 进日志
+    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>> ${LOG_FILE} 2>&1
+}
+
+set_yaml() {
+    # Usage: ./yaml_set.py 'key.path' 'value' file.yaml
+    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
+}
+
+get_yaml() {
+  local file="$1" key="$2"
+  python3 -c "
+import yaml,sys,os
+try:
+    data = yaml.safe_load(open(os.path.expanduser('$file')))
+    for seg in '$key'.split('.'):
+        data = data[seg]
+    print(data)
+except Exception as e:
+    print(e, file=sys.stderr)
+    sys.exit(1)
+"
+}
+
+check_port_in_use() {
+    local port=$1
+    # Linux 用 ss，没有 ss 再用 netstat
+    if command -v ss >/dev/null 2>&1; then
+        ss -tln | grep -q ":$port "
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -tln | grep -q ":$port "
+    else
+        # 都检测不到就保守一点：当“未占用”继续往下走
+        return 1
+    fi
+}
+
+
+log_msg "config_callback脚本执行中..."
+
+# 设置管理服务端口
+cfg_mgr_address=$(get_yaml "${CFG_FILE}" "http.address")
+cfg_mgr_port="${cfg_mgr_address##*:}"
+if [[ "${cfg_mgr_port}" == "${adg_mgr_port}" ]]; then
+    log_msg "管理服务端口未修改，保持不变: ${adg_mgr_port}"
+else
+    if check_port_in_use "$adg_mgr_port"; then
+        log_msg "目标管理端口 $adg_mgr_port 已被占用"
+        echo "管理端口 $adg_mgr_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
+        exit 1
+    else
+        log_msg "管理端口 $adg_mgr_port 未被占用"
+    fi
+    log_msg "设置管理服务端口: ${adg_mgr_port}"
+    set_yaml "http.address" "0.0.0.0:${adg_mgr_port}" "${CFG_FILE}"
+fi
+
+# 设置DNS服务端口
+cfg_dns_port=$(get_yaml "${CFG_FILE}" "dns.port")
+if [[ "${cfg_dns_port}" == "${adg_dns_port}" ]]; then
+    log_msg "DNS服务端口未修改，保持不变: ${adg_dns_port}"
+else
+    if check_port_in_use "$adg_dns_port"; then
+        log_msg "目标DNS端口 $adg_dns_port 已被占用"
+        echo "DNS端口 $adg_dns_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
+        exit 1
+    else
+        log_msg "DNS端口 $adg_dns_port 未被占用"
+    fi
+    log_msg "设置DNS服务端口: ${adg_dns_port}"
+    set_yaml "dns.port" "${adg_dns_port}" "${CFG_FILE}"
+fi
+
+# 设置管理员密码
+if [[ "${update_cfg}" == "true" ]]; then
+    password=$(encrypt_password "${adg_admin_password}")
+    log_msg "设置管理员密码: ${adg_admin_password}"
+    set_yaml "users[0].password" "${password}" "${CFG_FILE}"
+fi
+
 exit 0

@@ -1,5 +1,5 @@
 *.fpk
-AdGuardHome-linux-amd64.tar.gz
+AdGuardHome*.tar.gz
 AdGuardHome/app/script
 script/.venv
 script/wheels

@@ -1,5 +1,5 @@
 appname               = AdGuardHome
-version=0.107.71-7
+version=0.107.71-8
 display_name          = AdGuardHome
 desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br></br>使用：启动服务后，将路由DNS修改为飞牛IP
 platform              = x86
