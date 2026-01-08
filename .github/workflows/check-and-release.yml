@@ -3,7 +3,7 @@ name: Daily check release
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4,7,10 * *' 
+    - cron: '0 4,7,10 * * *' 
 
 jobs:
   job:
