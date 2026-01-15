@@ -2,16 +2,14 @@
 
 ### This script is called after the user uninstalls the application.
 
-LOG_FILE="${TRIM_PKGVAR}/info.log"
-
-log_msg() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
-}
+source "/var/apps/${TRIM_APPNAME}/cmd/common"
 
 if [ "${adg_data_action}" == "delete" ]; then
     # log_msg "卸载时，用户选择清除数据"
-    log_msg "开始清除配置数据"
-    bash -c "rm -rf ${TRIM_PKGVAR}" >> ${LOG_FILE} 2>&1
+    log_msg "开始清除数据"
+    rm -rf "${TRIM_PKGVAR}"
+    log_msg "开始清除数据"
+    rm -rf "/vol1/@appshare/${TRIM_APPNAME}"
 fi
 
 exit 0

@@ -1,4 +1,4 @@
-build_version=9
+build_version=10
 adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
 echo "最新AdGuardHome版本: $adh_version"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
@@ -95,6 +95,10 @@ if [ "$build_pre" == 'true' ];then
 fi
 sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${fpk_version}|" 'AdGuardHome/manifest'
 echo "设置 FPK 版本号为: ${fpk_version}"
+
+jq ".[0].items |= map(if .field == \"adg_version\" then .initValue = \"$adh_version\" else . end)" AdGuardHome/wizard/config > temp.json \
+  && mv temp.json AdGuardHome/wizard/config
+echo "更新配置向导中的AdGuardHome版本号为: ${adh_version}"
 
 echo "开始打包 AdGuardHome.fpk"
 # fnpack build --directory AdGuardHome/
