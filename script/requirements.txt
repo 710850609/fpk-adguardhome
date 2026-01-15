@@ -1,2 +1,2 @@
 bcrypt==5.0.0
-ruamel.yaml==0.18.17
+ruamel.yaml==0.19.1

@@ -1,4 +1,4 @@
-build_version=9
+build_version=11
 adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
 echo "最新AdGuardHome版本: $adh_version"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
@@ -39,6 +39,26 @@ echo "build_pre: ${build_pre}"
 echo "arch: ${arch}"
 
 
+# platform 取值 x86, arm, risc-v, all
+platform="all"
+py_platform="unknown"
+if [ "${arch}" == "linux-amd64" ]; then
+    platform="x86"
+    py_platform="manylinux_2_34_x86_64"
+elif [ "${arch}" == "linux-arm64" ]; then
+    platform="arm"
+    py_platform="manylinux_2_34_aarch64"
+elif [ "${arch}" == "linux-riscv64" ]; then
+    platform="risc-v"
+    py_platform="manylinux_2_34_riscv64"
+    echo "脚本不支持riscv64"
+    return 1
+else
+    echo "不支持的 arch 参数"
+    return 1
+fi
+echo "设置 platform 为: ${platform}"
+
 if [ -f "${bin_file}" ];then 
     # 读已下载的版本
     cuVersion=$(./${bin_file} --version | sed -n 's/AdGuard Home, version v//p')
@@ -70,17 +90,27 @@ fi
 
 
 # 下载py离线依赖
-echo "创建并激活py虚拟环境"
-cd script
-python3 -m venv .venv
-source .venv/bin/activate
-# pip install -r requirements.txt
-# 回写固定版本
-# pip freeze > requirements.txt
-rm -rf wheels
-echo "下载离线包, 使用pip: $(pip --version)"
-pip download -d wheels -r requirements.txt
-cd ../
+# echo "创建并激活py虚拟环境"
+# cd script
+# python3 -m venv .venv
+# source .venv/bin/activate
+# # pip install -r requirements.txt
+# # 回写固定版本
+# # pip freeze > requirements.txt
+# rm -rf wheels
+# echo "下载离线包, 使用pip: $(pip --version)"
+# pip download -d wheels -r requirements.txt
+# cd ../
+
+echo "下载py依赖"
+rm -rf script/wheels 
+pip download \
+    --only-binary=:all: \
+    --platform $py_platform \
+    --python-version 311 \
+    -r script/requirements.txt \
+    -d script/wheels 
+    
 # 下载 wheel 到本地
 app_script_path="AdGuardHome/app/script/"
 rm -rf "${app_script_path}"
@@ -88,13 +118,18 @@ echo "写入脚本到app"
 rm -rf  "${app_script_path}"
 rsync -a --exclude='.venv'  script/  "${app_script_path}"
 
-
 fpk_version="${adh_version}-${build_version}"
 if [ "$build_pre" == 'true' ];then 
-    fpk_version="${fpk_version}-pre"
+    cur_time=$(date +"%Y%m%d%H%M%S")
+    echo "当前时间：$cur_time"
+    fpk_version="${fpk_version}-${cur_time}"
 fi
 sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${fpk_version}|" 'AdGuardHome/manifest'
 echo "设置 FPK 版本号为: ${fpk_version}"
+
+jq ".[0].items |= map(if .field == \"adg_version\" then .initValue = \"$adh_version\" else . end)" AdGuardHome/wizard/config > temp.json \
+  && mv temp.json AdGuardHome/wizard/config
+echo "更新配置向导中的AdGuardHome版本号为: ${adh_version}"
 
 echo "开始打包 AdGuardHome.fpk"
 # fnpack build --directory AdGuardHome/

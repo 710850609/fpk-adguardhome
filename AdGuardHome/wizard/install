@@ -33,6 +33,10 @@
                 "initValue": "true"
             },
             {
+                "type": "tips",
+                "helpText": "开启强制覆盖原先配置 或 没有原先配置 才有效"
+            },
+            {
                 "type": "select",
                 "field": "adg_setting_type",
                 "label": "运行配置",
@@ -50,11 +54,7 @@
             },
             {
                 "type": "tips",
-                "helpText": "国内优化配置，增加额外设置：DNS设置、DNS广告黑名单"
-            },
-            {
-                "type": "tips",
-                "helpText": "开启强制覆盖原先配置 或 没有原先配置 才有效"
+                "helpText": "国内优化配置是在默认基础上增加额外：DNS设置、DNS广告黑名单（合适国内网络环境快速使用）"
             }
         ]
     }, 

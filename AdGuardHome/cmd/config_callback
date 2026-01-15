@@ -2,95 +2,154 @@
 
 ### This script is called after the user change environment variables in application setting page.
 
-LOG_FILE="${TRIM_PKGVAR}/info.log"
-DEFAULT_CFG_FILE="${TRIM_APPDEST}/bin/AdGuardHome.yaml"
-CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
-SCRIPT_PATH="${TRIM_APPDEST}/script"
-USER_FILTER_PATH="${TRIM_PKGVAR}/userfilters"
+source "/var/apps/${TRIM_APPNAME}/cmd/common"
 
-log_msg() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> ${LOG_FILE}
-}
+DOWNLOAD_DIR="${TRIM_PKGVAR}"
 
-encrypt_password() {
-    # python 脚本只输出哈希；stderr 进日志
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>> ${LOG_FILE} 2>&1
-}
+check_url_availability() {
+    local url="$1"
+    local status_code=$(curl -I -s -o /dev/null -w "%{http_code}" "$url")
 
-set_yaml() {
-    # Usage: ./yaml_set.py 'key.path' 'value' file.yaml
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
-}
-
-get_yaml() {
-  local file="$1" key="$2"
-  python3 -c "
-import yaml,sys,os
-try:
-    data = yaml.safe_load(open(os.path.expanduser('$file')))
-    for seg in '$key'.split('.'):
-        data = data[seg]
-    print(data)
-except Exception as e:
-    print(e, file=sys.stderr)
-    sys.exit(1)
-"
-}
-
-check_port_in_use() {
-    local port=$1
-    # Linux 用 ss，没有 ss 再用 netstat
-    if command -v ss >/dev/null 2>&1; then
-        ss -tln | grep -q ":$port "
-    elif command -v netstat >/dev/null 2>&1; then
-        netstat -tln | grep -q ":$port "
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -le 399 ]; then
+        return 0  # URL 可用
     else
-        # 都检测不到就保守一点：当“未占用”继续往下走
-        return 1
+        log_msg "下载链接不可用，HTTP 状态码: $status_code, URL: $url"
+        return 1  # URL 不可用
     fi
 }
 
+get_last_adg_version(){
+    local adg_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
+    echo "$adg_version"
+}
 
-log_msg "config_callback脚本执行中..."
-
-# 设置管理服务端口
-cfg_mgr_address=$(get_yaml "${CFG_FILE}" "http.address")
-cfg_mgr_port="${cfg_mgr_address##*:}"
-if [[ "${cfg_mgr_port}" == "${adg_mgr_port}" ]]; then
-    log_msg "管理服务端口未修改，保持不变: ${adg_mgr_port}"
-else
-    if check_port_in_use "$adg_mgr_port"; then
-        log_msg "目标管理端口 $adg_mgr_port 已被占用"
-        echo "管理端口 $adg_mgr_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
-        exit 1
-    else
-        log_msg "管理端口 $adg_mgr_port 未被占用"
+get_adg_download_url(){
+    # 获取系统架构
+    local arch
+    local uname_out=$(uname -m)
+    case "$uname_out" in
+        x86_64) arch="linux_amd64" ;;
+        aarch64) arch="linux_arm64" ;;
+        loongarch64) arch="linux_arm64" ;;
+        riscv64) arch="linux_riscv64" ;;
+        *)
+            alarm_and_exit "不支持当前系统架构 $uname_out 下载安装OpenList"
+            ;;
+    esac
+    log_msg "系统架构: ${arch}"
+    # 构造下载链接并下载安装
+    local download_version="$1"
+    local download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${download_version}/AdGuardHome_${arch}.tar.gz"
+    local proxy_url=$(str_trim "$2")
+    if [[ -n "${proxy_url}" ]]; then
+        log_msg "使用代理下载: ${proxy_url}"
+        download_url="${proxy_url}/${download_url}"
     fi
-    log_msg "设置管理服务端口: ${adg_mgr_port}"
-    set_yaml "http.address" "0.0.0.0:${adg_mgr_port}" "${CFG_FILE}"
-fi
+    echo $download_url
+}
 
-# 设置DNS服务端口
-cfg_dns_port=$(get_yaml "${CFG_FILE}" "dns.port")
-if [[ "${cfg_dns_port}" == "${adg_dns_port}" ]]; then
-    log_msg "DNS服务端口未修改，保持不变: ${adg_dns_port}"
-else
-    if check_port_in_use "$adg_dns_port"; then
-        log_msg "目标DNS端口 $adg_dns_port 已被占用"
-        echo "DNS端口 $adg_dns_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
-        exit 1
-    else
-        log_msg "DNS端口 $adg_dns_port 未被占用"
+install_version(){
+    # 安装指定版本
+    adg_version=$(str_trim "$adg_version")
+    log_msg "用户指定AdGuardHome版本: $adg_version"
+    if [[ -z "${adg_version}" ]]; then
+        log_msg "未指定AdGuardHome版本号，跳过安装指定版本"
+        return 0
     fi
-    log_msg "设置DNS服务端口: ${adg_dns_port}"
-    set_yaml "dns.port" "${adg_dns_port}" "${CFG_FILE}"
-fi
+    log_msg "用户指定安装 AdGuardHome 版本: ${adg_version}"
+    local current_version=$(${TRIM_APPDEST}/bin/AdGuardHome --version | grep -oP 'v\K[0-9.]+(-b\.[0-9]+)?')
+    if [ "$current_version" == "$adg_version" ]; then
+        log_msg "AdGuardHome 当前已是 ${adg_version} 版本，跳过安装指定版本"
+        return 0
+    fi
+    log_msg "当前 AdGuardHome 版本为 ${current_version}"
+    local download_url=$(get_adg_download_url "${adg_version}" "${download_proxy_url}")
+    log_msg "检查下载链接: ${download_url}"
+    if !(check_url_availability "${download_url}") ; then
+        latest_version=$(get_last_adg_version)
+        alarm_and_exit "AdGuardHome最新版本号: $latest_version，请检测版本号或加速地址。下载链接不可用: ${download_url}"
+    fi
 
-# 设置管理员密码
-if [[ "${update_cfg}" == "true" ]]; then
+    log_msg "开始下载AdGuardHome: ${download_url}"
+    save_file="${DOWNLOAD_DIR}/AdGuardHome_${adg_version}.tar.gz"
+    rm -f $save_file
+    wget -O $save_file "${download_url}"
+    if [ ! -f $save_file ]; then
+        latest_version=$(get_last_adg_version)
+        alarm_and_exit "下载失败，请稍后重试或换其他加速地址。AdGuardHome最新版本号: $latest_version，当次下载地址：${download_url}"
+    fi
+
+    log_msg "下载完成：${save_file}, 开始解压AdGuardHome程序文件"
+    rm -rf ${DOWNLOAD_DIR}/AdGuardHome
+    bash -c "tar -xzf $save_file -C ${DOWNLOAD_DIR}" >> ${LOG_FILE} 2>&1
+    stop_cmd="/var/apps/${TRIM_APPNAME}/cmd/main stop"
+    log_msg "尝试停止AdGuardHome服务: ${stop_cmd}"
+    bash -c "${stop_cmd}" >> ${LOG_FILE} 2>&1
+    log_msg "替换AdGuardHome程序文件"
+    bash -c "mv ${DOWNLOAD_DIR}/AdGuardHome/AdGuardHome $TRIM_APPDEST/bin/AdGuardHome" >> ${LOG_FILE} 2>&1
+    log_msg "已安装AdGuardHome版本: $(${TRIM_APPDEST}/bin/AdGuardHome --version | grep -oP 'v\K[0-9.]+(-b\.[0-9]+)?') 完成"
+    rm -rf ${DOWNLOAD_DIR}/AdGuardHome
+    rm -f $save_file
+}
+
+update_mgr_port() {
+    # 设置管理服务端口
+    cfg_mgr_address=$(get_yaml "${CFG_FILE}" "http.address")
+    cfg_mgr_port="${cfg_mgr_address##*:}"
+    if [[ "${cfg_mgr_port}" == "${adg_mgr_port}" ]]; then
+        log_msg "管理服务端口未修改，保持不变: ${adg_mgr_port}"
+    else
+        if check_port_in_use "$adg_mgr_port" "AdGuardHome"; then
+            log_msg "目标管理端口 $adg_mgr_port 已被占用"
+            echo "管理端口 $adg_mgr_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
+            exit 1
+        else
+            log_msg "管理端口 $adg_mgr_port 未被占用"
+        fi
+        log_msg "设置管理服务端口: ${adg_mgr_port}"
+        set_yaml "http.address" "0.0.0.0:${adg_mgr_port}" "${CFG_FILE}"
+    fi
+}
+
+update_dns_port() {
+    # 设置DNS服务端口
+    cfg_dns_port=$(get_yaml "${CFG_FILE}" "dns.port")
+    if [[ "${cfg_dns_port}" == "${adg_dns_port}" ]]; then
+        log_msg "DNS服务端口未修改，保持不变: ${adg_dns_port}"
+    else
+        if check_port_in_use "$adg_dns_port" "AdGuardHome"; then
+            log_msg "目标DNS端口 $adg_dns_port 已被占用"
+            echo "DNS端口 $adg_dns_port 已被占用，请改用其他端口" > "${TRIM_TEMP_LOGFILE}"
+            exit 1
+        else
+            log_msg "DNS端口 $adg_dns_port 未被占用"
+        fi
+        log_msg "设置DNS服务端口: ${adg_dns_port}"
+        set_yaml "dns.port" "${adg_dns_port}" "${CFG_FILE}"
+    fi
+}
+
+update_admin_password() {
+    # 设置管理员密码
     password=$(encrypt_password "${adg_admin_password}")
     log_msg "设置管理员密码: ${adg_admin_password}"
     set_yaml "users[0].password" "${password}" "${CFG_FILE}"
-fi
+}
+
+update_logo() {
+    # 设置Logo样式
+    bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} ${TRIM_APPDEST}/ui/images/icon_64.png" >> ${LOG_FILE} 2>&1
+    bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} ${TRIM_APPDEST}/ui/images/icon_256.png" >> ${LOG_FILE} 2>&1
+    bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} /var/apps/${TRIM_APPNAME}/ICON.PNG" >> ${LOG_FILE} 2>&1
+    bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} /var/apps/${TRIM_APPNAME}/ICON_256.PNG" >> ${LOG_FILE} 2>&1
+    log_msg "设置Logo样式: ${adg_logo_name}"
+}
+
+log_msg "config_callback脚本执行中..."
+update_mgr_port
+update_dns_port
+update_admin_password
+update_logo
+install_version
 
 exit 0
