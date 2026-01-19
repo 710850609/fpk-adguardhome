@@ -59,8 +59,11 @@ jobs:
             docker_image: "amd64/python:3.11"
             platform: "linux/amd64"
           - arch: linux-arm64
-            docker_image: "arm64v8/python:3.11"
-            platform: "linux/arm64/v8"
+            # build.sh 脚本可以交叉编译
+            docker_image: "amd64/python:3.11"
+            platform: "linux/amd64"
+            # docker_image: "arm64v8/python:3.11"
+            # platform: "linux/arm64/v8"
     
     steps:
       - name: Checkout repository
@@ -80,7 +83,7 @@ jobs:
           #!/bin/bash
           set -e
           echo "开始在容器内构建..."
-          echo "当前架构: $(uname -m)"
+          # echo "当前架构: $(uname -m)"
           echo "Python 版本: $(python3 --version)"
           echo "当前目录$(pwd)"
           echo "当前资源$(ls -la)"
