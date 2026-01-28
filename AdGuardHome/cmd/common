@@ -22,12 +22,12 @@ alarm_and_exit() {
 
 encrypt_password() {
     # python 脚本只输出哈希；stderr 进日志
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>> ${LOG_FILE} 2>&1
+    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>>"${LOG_FILE}"
 }
 
 set_yaml() {
     # Usage: ./yaml_set.py 'key.path' 'value' file.yaml
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>> ${LOG_FILE} 2>&1
+    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>>"${LOG_FILE}"
 }
 
 get_yaml() {
@@ -42,7 +42,7 @@ try:
 except Exception as e:
     print(e, file=sys.stderr)
     sys.exit(1)
-"
+" >> ${LOG_FILE} 2>&1
 }
 
 str_trim() {

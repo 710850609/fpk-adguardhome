@@ -156,9 +156,7 @@ def main():
     value = sys.argv[2]
     file_path = sys.argv[3]
     
-    if set_yaml_value(file_path, path, value):
-        print(f"成功更新 {file_path}")
-    else:
+    if not set_yaml_value(file_path, path, value):
         print(f"操作失败", file=sys.stderr)
         sys.exit(1)
 

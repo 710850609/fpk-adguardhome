@@ -140,14 +140,14 @@ fi
 # 设置管理员账号
 if [[ "${update_cfg}" == "true" ]]; then
     log_msg "设置管理员账号: ${adg_admin_name}"
-    set_yaml "users[0].name" "${adg_admin_name}" "${CFG_FILE}"
+    set_yaml "users[0].name" "'${adg_admin_name}'" "${CFG_FILE}"
 fi
 
 # 设置管理员密码
 if [[ "${update_cfg}" == "true" ]]; then
     password=$(encrypt_password "${adg_admin_password}")
     log_msg "设置管理员密码: ${adg_admin_password}"
-    set_yaml "users[0].password" "${password}" "${CFG_FILE}"
+    set_yaml "users[0].password" "'${password}'" "${CFG_FILE}"
 fi
 
 # 设置管理服务端口
