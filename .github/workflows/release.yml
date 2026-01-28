@@ -32,12 +32,12 @@ jobs:
           elif [[ "${GITHUB_REF}" == refs/heads/main ]]; then
             AdgVersion=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
             BuildVersion=$(sed -n 's/^[[:space:]]*build_version[[:space:]]*=[[:space:]]*\([^#[:space:]]*\).*/\1/p' "build.sh" | head -n1)
-            TAG="release/${AdgVersion}-${BuildVersion}"
+            TAG="${AdgVersion}-${BuildVersion}"
           else
-            TAG="run-${GITHUB_RUN_NUMBER}"
+            TAG="build-${GITHUB_RUN_NUMBER}"
           fi
           
-          if [[ "$TAG" == run-* ]] || [[ "${TAG}" == *dev* ]] || [[ "${TAG}" == *pre* ]] || [[ "${TAG}" == *beta* ]]; then
+          if [[ "$TAG" == build-* ]] || [[ "${TAG}" == *dev* ]] || [[ "${TAG}" == *pre* ]] || [[ "${TAG}" == *beta* ]]; then
             PRE=true
           else
             PRE=false
