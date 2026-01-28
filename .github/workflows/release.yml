@@ -55,10 +55,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: linux-amd64
+          - arch: x86
             docker_image: "amd64/python:3.11"
             platform: "linux/amd64"
-          - arch: linux-arm64
+          - arch: arm
             # build.sh 脚本可以交叉编译
             docker_image: "amd64/python:3.11"
             platform: "linux/amd64"
@@ -98,7 +98,7 @@ jobs:
           # 执行构建脚本
           chmod +x ./fnpack.sh 2>/dev/null || true
           chmod +x ./build.sh 2>/dev/null || true
-          ./build.sh build_pre="${PRERELEASE}" arch="${ARCH}" 2>/dev/null || true      
+          ./build.sh build_pre="${PRERELEASE}" arch="${ARCH}" build_all="true" 2>/dev/null || true      
           
           # 验证构建结果
           echo "构建后目录内容: $(pwd)"
@@ -159,15 +159,17 @@ jobs:
           fi
 
           mkdir -p release
-          if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
-            cp "$FPK_FILE" "release/$FPK_FILE"
-            echo "准备完成: $FPK_FILE"
-          else
-            # 正式版去除版本号
-            NEW_FPK_NAME="AdGuardHome-${{ matrix.arch }}.fpk"
-            cp "$FPK_FILE" "release/$NEW_FPK_NAME"
-            echo "准备完成: $NEW_FPK_NAME"
-          fi
+          cp "$FPK_FILE" "release/$FPK_FILE"
+          echo "准备完成: $FPK_FILE"
+          # if [ "${{ needs.setup.outputs.prerelease }}" == "true" ]; then
+          #   cp "$FPK_FILE" "release/$FPK_FILE"
+          #   echo "准备完成: $FPK_FILE"
+          # else
+          #   # 正式版去除版本号
+          #   NEW_FPK_NAME="AdGuardHome-${{ matrix.arch }}.fpk"
+          #   cp "$FPK_FILE" "release/$NEW_FPK_NAME"
+          #   echo "准备完成: $NEW_FPK_NAME"
+          # fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -193,13 +195,13 @@ jobs:
       - name: Download amd64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: fpk-linux-amd64
+          name: fpk-x86
           path: combined-release
 
       - name: Download arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: fpk-linux-arm64
+          name: fpk-arm
           path: combined-release
 
       - name: Create GitHub Release

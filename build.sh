@@ -9,8 +9,8 @@ declare -A PARAMS
 # 默认值
 PARAMS[build_all]="false"
 PARAMS[build_pre]="false"
-# linux-amd64, linux-arm64
-PARAMS[arch]="linux-amd64"
+# x86 arm
+PARAMS[arch]="x86"
 
 # 解析 key=value 格式的参数
 for arg in "$@"; do
@@ -42,19 +42,22 @@ echo "arch: ${arch}"
 # platform 取值 x86, arm, risc-v, all
 platform="all"
 py_platform="unknown"
-if [ "${arch}" == "linux-amd64" ]; then
+os_min_version="1.0.0"
+if [ "${arch}" == "x86" ]; then
     platform="x86"
     py_platform="manylinux_2_34_x86_64"
-elif [ "${arch}" == "linux-arm64" ]; then
+    os_min_version="1.1.8"
+elif [ "${arch}" == "arm" ]; then
     platform="arm"
     py_platform="manylinux_2_34_aarch64"
-elif [ "${arch}" == "linux-riscv64" ]; then
+    os_min_version="1.0.2"
+elif [ "${arch}" == "risc-v" ]; then
     platform="risc-v"
     py_platform="manylinux_2_34_riscv64"
     echo "脚本不支持riscv64"
     return 1
 else
-    echo "不支持的 arch 参数"
+    echo "不支持的 arch 参数： ${arch}，仅支持 x86, arm, risc-v"
     return 1
 fi
 echo "设置 platform 为: ${platform}"
@@ -125,7 +128,11 @@ if [ "$build_pre" == 'true' ];then
     fpk_version="${fpk_version}-${cur_time}"
 fi
 sed -i "s|^[[:space:]]*version[[:space:]]*=.*|version=${fpk_version}|" 'AdGuardHome/manifest'
-echo "设置 FPK 版本号为: ${fpk_version}"
+echo "设置 manifest 的 version 为: ${fpk_version}"
+sed -i "s|^[[:space:]]*platform[[:space:]]*=.*|platform=${platform}|" 'AdGuardHome/manifest'
+echo "设置 manifest 的 platform 为: ${platform}"
+sed -i "s|^[[:space:]]*os_min_version[[:space:]]*=.*|os_min_version=${os_min_version}|" 'AdGuardHome/manifest'
+echo "设置 manifest 的 os_min_version 为: ${os_min_version}"
 
 jq ".[0].items |= map(if .field == \"adg_version\" then .initValue = \"$adh_version\" else . end)" AdGuardHome/wizard/config > temp.json \
   && mv temp.json AdGuardHome/wizard/config
@@ -136,7 +143,7 @@ echo "开始打包 AdGuardHome.fpk"
 ./fnpack.sh build --directory AdGuardHome || { echo "打包失败"; exit 1; }
 
 
-fpk_name="AdGuardHome-${arch}-${fpk_version}.fpk"
+fpk_name="AdGuardHome-${fpk_version}-${arch}.fpk"
 rm -f "${fpk_name}"
 mv AdGuardHome.fpk "${fpk_name}"
 echo "打包完成: ${fpk_name}"
