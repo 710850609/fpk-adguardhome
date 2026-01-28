@@ -9,6 +9,7 @@ declare -A PARAMS
 # 默认值
 PARAMS[build_all]="false"
 PARAMS[build_pre]="false"
+PARAMS[download_proxy_url]="https://gh.llkk.cc"
 # x86 arm
 PARAMS[arch]="x86"
 
@@ -33,9 +34,11 @@ done
 
 build_all="${PARAMS[build_all]}"
 build_pre="${PARAMS[build_pre]}"
+download_proxy_url="${PARAMS[download_proxy_url]}"
 arch="${PARAMS[arch]}"
 echo "build_all: ${build_all}"
 echo "build_pre: ${build_pre}"
+echo "download_proxy_url: ${download_proxy_url}"
 echo "arch: ${arch}"
 
 
@@ -43,18 +46,21 @@ echo "arch: ${arch}"
 platform="all"
 py_platform="unknown"
 os_min_version="1.0.0"
+adg_arch_type="unknown"
 if [ "${arch}" == "x86" ]; then
     platform="x86"
     py_platform="manylinux_2_34_x86_64"
     os_min_version="1.1.8"
+    adg_arch_type="linux_amd64"
 elif [ "${arch}" == "arm" ]; then
     platform="arm"
     py_platform="manylinux_2_34_aarch64"
     os_min_version="1.0.2"
+    adg_arch_type="linux_arm64"
 elif [ "${arch}" == "risc-v" ]; then
     platform="risc-v"
     py_platform="manylinux_2_34_riscv64"
-    echo "脚本不支持riscv64"
+    echo "AdGuardHome不支持riscv64"
     return 1
 else
     echo "不支持的 arch 参数： ${arch}，仅支持 x86, arm, risc-v"
@@ -76,11 +82,14 @@ if [ -f "${bin_file}" ];then
 fi
 if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     echo "AdGuardHome 预编译文件不存在: $bin_file, 开始下载预编译版本..."
-    proxy_url="https://gh.llkk.cc"
-    rm -f AdGuardHome.tar.gz
-    arch_type=${arch//-/_}
-    download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${arch_type}.tar.gz"
+    download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${adg_arch_type}.tar.gz"
+    if [[ -n "${download_proxy_url}" ]]; then
+        echo "使用加速下载: ${download_proxy_url}"
+        download_url="${download_proxy_url}/${download_url}"
+    fi
+    echo "下载链接: ${download_url}"
     # download_url="${proxy_url}/${download_url}"
+    rm -f AdGuardHome.tar.gz
     wget -O AdGuardHome.tar.gz "${download_url}"
     echo "下载完成，开始解压文件到 $bin_file 目录"
     mkdir AdGuardHome-dist
