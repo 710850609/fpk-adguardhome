@@ -80,7 +80,7 @@ if [ -f "${bin_file}" ];then
         echo "已下载版本大于等于目标版本，无需重新下载"
     fi
 fi
-if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
+if [ ! -f "${bin_file}" ] || [ "${build_all}" == "true" ]; then
     echo "AdGuardHome 预编译文件不存在: $bin_file, 开始下载预编译版本..."
     download_url="https://github.com/AdguardTeam/AdGuardHome/releases/download/v${adh_version}/AdGuardHome_${adg_arch_type}.tar.gz"
     if [[ -n "${download_proxy_url}" ]]; then
@@ -90,7 +90,7 @@ if [ ! -f "${bin_file}" ] || [ "${build_all}" == "all" ]; then
     echo "下载链接: ${download_url}"
     # download_url="${proxy_url}/${download_url}"
     rm -f AdGuardHome.tar.gz
-    wget -O AdGuardHome.tar.gz "${download_url}"
+    wget -O AdGuardHome.tar.gz "${download_url}" || { echo "下载失败，请检查下载地址或网络";  exit 1; }
     echo "下载完成，开始解压文件到 $bin_file 目录"
     mkdir AdGuardHome-dist
     tar -xzf AdGuardHome.tar.gz -C AdGuardHome-dist
