@@ -1,4 +1,4 @@
-build_version=11
+build_version=12
 adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
 echo "最新AdGuardHome版本: $adh_version"
 bin_file="AdGuardHome/app/bin/AdGuardHome"

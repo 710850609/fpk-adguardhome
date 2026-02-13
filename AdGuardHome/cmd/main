@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 source "/var/apps/${TRIM_APPNAME}/cmd/common"
 
 PID_FILE="${TRIM_PKGVAR}/app.pid"

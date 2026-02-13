@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ### This script is called after the user change environment variables in application setting page.
-
+set -e
 source "/var/apps/${TRIM_APPNAME}/cmd/common"
 
 DOWNLOAD_DIR="${TRIM_PKGVAR}"
@@ -138,11 +138,15 @@ update_admin_password() {
 
 update_logo() {
     # 设置Logo样式
+    log_msg "开始设置Logo样式: ${adg_logo_name}"
+    if [[ -z "${adg_logo_name}" ]]; then
+        adg_logo_name="icon.png"
+    fi
     bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} ${TRIM_APPDEST}/ui/images/icon_64.png" >> ${LOG_FILE} 2>&1
     bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} ${TRIM_APPDEST}/ui/images/icon_256.png" >> ${LOG_FILE} 2>&1
     bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} /var/apps/${TRIM_APPNAME}/ICON.PNG" >> ${LOG_FILE} 2>&1
     bash -c "cp -f ${TRIM_APPDEST}/ui/logo_src/${adg_logo_name} /var/apps/${TRIM_APPNAME}/ICON_256.PNG" >> ${LOG_FILE} 2>&1
-    log_msg "设置Logo样式: ${adg_logo_name}"
+    log_msg "结束设置Logo样式: ${adg_logo_name}"
 }
 
 log_msg "config_callback脚本执行中..."

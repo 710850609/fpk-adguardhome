@@ -22,27 +22,33 @@ alarm_and_exit() {
 
 encrypt_password() {
     # python 脚本只输出哈希；stderr 进日志
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>>"${LOG_FILE}"
+    local error_msg result 
+    result=$("$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/htpasswd.py" "$1" 2>&1) || { 
+        error_msg="$result"
+        log_msg "脚本执行失败: $error_msg"
+        alarm_and_exit "设置配置【$1】失败: $error_msg" 
+    }
+    echo "$result"
 }
 
 set_yaml() {
-    # Usage: ./yaml_set.py 'key.path' 'value' file.yaml
-    "$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>>"${LOG_FILE}"
+    # Usage: ./yaml_set.py 'key.path' 'value' file.yaml   
+    error_msg=$("$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_set.py" "$1" "$2" "$3" 2>&1) || { 
+        log_msg "脚本执行失败: $error_msg"
+        alarm_and_exit "设置配置【$1】失败: $error_msg" 
+    }
 }
 
 get_yaml() {
-  local file="$1" key="$2"
-  "$SCRIPT_PATH/.venv/bin/python3" -c "
-import yaml,sys,os
-try:
-    data = yaml.safe_load(open(os.path.expanduser('$file')))
-    for seg in '$key'.split('.'):
-        data = data[seg]
-    print(data)
-except Exception as e:
-    print(e, file=sys.stderr)
-    sys.exit(1)
-" >> ${LOG_FILE} 2>&1
+    local file="$1" key="$2"
+    local error_msg result    # ← 都声明为 local
+  
+    result=$("$SCRIPT_PATH/.venv/bin/python3" "${SCRIPT_PATH}/yaml_get.py" "$key" "$file" 2>&1) || { 
+        error_msg="$result"     # ← 失败时才把结果当错误信息
+        log_msg "脚本执行失败: $error_msg"
+        alarm_and_exit "获取配置【$key】失败: $error_msg" 
+    }
+    echo "$result"
 }
 
 str_trim() {
