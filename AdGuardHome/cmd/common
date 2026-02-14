@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_DIR="/vol1/@appshare/${TRIM_APPNAME}/logs"
+LOG_DIR="${TRIM_APPDEST_VOL}/@appshare/${TRIM_APPNAME}/logs"
 LOG_FILE="${LOG_DIR}/cmd.log"
 SCRIPT_PATH="${TRIM_APPDEST}/script"
 CFG_FILE="${TRIM_PKGVAR}/AdGuardHome.yaml"
