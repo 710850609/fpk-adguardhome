@@ -36,6 +36,8 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF##*/}"
+          elif [[ "${GITHUB_REF}" == refs/heads/main ]]; then
+            TAG="main"
           else
             TAG="build-${GITHUB_RUN_NUMBER}"
           fi
