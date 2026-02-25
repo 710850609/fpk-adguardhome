@@ -155,9 +155,13 @@ jq ".[0].items[0].initValue = \"$adh_version\" \
 echo "更新upgrade向导中的AdGuardHome版本号为: ${adh_version}"
 
 echo "开始打包 AdGuardHome.fpk"
-# fnpack build --directory AdGuardHome/
-./fnpack.sh build --directory AdGuardHome || { echo "打包失败"; exit 1; }
-
+if command -v fnpack >/dev/null 2>&1; then
+    echo "使用系统已安装的 fnpack $(fnpack | grep Version) 进行打包"
+    fnpack build --directory AdGuardHome/ || { echo "打包失败"; exit 1; }
+else
+    echo "使用本地 fnpack 脚本进行打包"
+    ./fnpack.sh build --directory AdGuardHome || { echo "打包失败"; exit 1; }
+fi
 
 fpk_name="AdGuardHome-${fpk_version}-${arch}.fpk"
 rm -f "${fpk_name}"
