@@ -187,7 +187,7 @@ jobs:
           if [[ "${{ github.event.inputs.release_notes }}" != '' ]]; then
             echo "- ${{ github.event.inputs.release_notes }}" > release_notes.txt
           else
-            awk -v ver="${{ needs.build-arch.outputs.release_version }}" '
+            awk -v ver="$release_version" '
               $0 ~ "^## " ver { found=1; next }
               found && $0 ~ "^## " { exit }
               found { print }
@@ -196,7 +196,7 @@ jobs:
           echo "release_notes: $(cat release_notes.txt)"
           # 检查是否提取到内容
           if [ ! -s release_notes.txt ]; then
-            echo "⚠️ No changelog found for $VERSION, using default message"
+            echo "⚠️ No changelog found for $release_version, using default message"
             echo "详见 [CHANGELOG.md](./CHANGELOG.md)" > release_notes.txt
           fi
 
@@ -211,7 +211,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release_notes
-          path: release/
+          path: release_notes.txt
           retention-days: 1
           # 不同架构使用同名，需要设置覆盖
           overwrite: true
