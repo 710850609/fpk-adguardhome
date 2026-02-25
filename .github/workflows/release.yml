@@ -55,6 +55,8 @@ jobs:
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "release_version=$AdgVersion-$BuildVersion" >> $GITHUB_OUTPUT
           echo "prerelease=$PRE" >> $GITHUB_OUTPUT
+          echo "release_version: ${release_version}"
+          echo "tag: ${tag}"
 
   # 所有架构都使用 Docker 在 x86 上构建
   build-arch:
