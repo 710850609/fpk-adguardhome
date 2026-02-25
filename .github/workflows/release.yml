@@ -226,7 +226,7 @@ jobs:
               $0 ~ "^## " ver { found=1; next }
               found && $0 ~ "^## " { exit }
               found { print }
-            ' CHANGELOG.md > release_notes.txt
+            ' "${{ github.workspace }}/AdGuardHome/CHANGELOG.md" > release_notes.txt
           fi
           echo "release_notes: $(cat release_notes.txt)"
           # 检查是否提取到内容
