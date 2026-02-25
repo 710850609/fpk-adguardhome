@@ -241,7 +241,7 @@ jobs:
           prerelease: ${{ needs.setup.outputs.prerelease }}
           skipIfReleaseExists: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          bodyPath: "release_notes.txt"
+          bodyFile: "release_notes.txt"
 
 
       - name: Upload release summary
