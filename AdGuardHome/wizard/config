@@ -57,7 +57,7 @@
         "type": "text",
         "field": "adg_version",
         "label": "AdGuardHome版本",
-        "initValue": "0.107.71",
+        "initValue": "0.107.72",
         "rules": [
           {
             "required": true,

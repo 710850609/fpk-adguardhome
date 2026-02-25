@@ -4,7 +4,12 @@ on:
   push:
     tags:
       - '*'
-  workflow_dispatch: {}
+  workflow_dispatch: 
+    inputs:
+      release_notes:
+        description: '发布说明'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -21,6 +26,11 @@ jobs:
       release_version: ${{ steps.set-tag.outputs.release_version }}
       prerelease: ${{ steps.set-tag.outputs.prerelease }}
     steps:
+    steps:
+      - name: workflow dispatch params
+        run: |
+          echo "release_notes: ${{ github.event.inputs.release_notes }}"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -204,6 +214,25 @@ jobs:
           name: fpk-arm
           path: combined-release
 
+      - name: Extract Release Notes
+        id: notes
+        run: |
+          if [[ "${{ github.event.inputs.release_notes }}" != '' ]]; then
+            echo "- ${{ github.event.inputs.release_notes }}" > release_notes.txt
+          else
+            awk -v ver="${{ needs.setup.outputs.release_version }}" '
+              $0 ~ "^## " ver { found=1; next }
+              found && $0 ~ "^## " { exit }
+              found { print }
+            ' CHANGELOG.md > release_notes.txt
+          fi
+          echo "release_notes: $(cat release_notes.txt)"
+          # 检查是否提取到内容
+          if [ ! -s release_notes.txt ]; then
+            echo "⚠️ No changelog found for $VERSION, using default message"
+            echo "详见 [CHANGELOG.md](./CHANGELOG.md)" > release_notes.txt
+          fi
+
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
@@ -213,6 +242,8 @@ jobs:
           prerelease: ${{ needs.setup.outputs.prerelease }}
           skipIfReleaseExists: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          bodyPath: "release_notes.txt"
+
 
       - name: Upload release summary
         if: always()

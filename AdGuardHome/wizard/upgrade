@@ -1,0 +1,27 @@
+[
+  {
+    "stepTitle": "运行参数",
+    "items": [
+      {
+        "type": "text",
+        "field": "adg_version",
+        "label": "AdGuardHome版本",
+        "initValue": "0.107.72",
+        "rules": [
+          {
+            "required": true,
+            "message": "请输入AdGuardHome版本"
+          },
+          {
+            "pattern": "^0.107.72$",
+            "message": "请输入 0.107.72"
+          }
+        ]
+      },
+      {
+        "type": "tips",
+        "helpText": "<p>飞牛限制，需要此步骤，请不要修改直接点击下一步</p>此步骤并不会修改AdGuardHome版本</p>"
+      }
+    ]
+  }
+]
