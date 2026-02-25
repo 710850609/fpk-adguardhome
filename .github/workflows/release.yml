@@ -177,17 +177,40 @@ jobs:
           #   echo "准备完成: $NEW_FPK_NAME"
           # fi
 
-      - name: Get Release Version
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpk-${{ matrix.arch }}
+          path: release/
+          retention-days: 1
+
+      - name: Get Release Info
         id: release-info
         run: |
           release_version=$(grep -E "^version\s*=" AdGuardHome/manifest | sed -E 's/^version\s*=\s*//')
           echo "release_version=$release_version" >> $GITHUB_OUTPUT
           echo "从manifest中获取release_version: $release_version"
+          
+          if [[ "${{ github.event.inputs.release_notes }}" != '' ]]; then
+            echo "- ${{ github.event.inputs.release_notes }}" > release_notes.txt
+          else
+            awk -v ver="${{ needs.build-arch.outputs.release_version }}" '
+              $0 ~ "^## " ver { found=1; next }
+              found && $0 ~ "^## " { exit }
+              found { print }
+            ' "${{ github.workspace }}/CHANGELOG.md" > release_notes.txt
+          fi
+          echo "release_notes: $(cat release_notes.txt)"
+          # 检查是否提取到内容
+          if [ ! -s release_notes.txt ]; then
+            echo "⚠️ No changelog found for $VERSION, using default message"
+            echo "详见 [CHANGELOG.md](./CHANGELOG.md)" > release_notes.txt
+          fi
 
-      - name: Upload artifact
+      - name: Upload Release Notes
         uses: actions/upload-artifact@v4
         with:
-          name: fpk-${{ matrix.arch }}
+          name: release_notes
           path: release/
           retention-days: 1
 
@@ -217,23 +240,11 @@ jobs:
           name: fpk-arm
           path: combined-release
 
-      - name: Extract Release Info
-        run: |
-          if [[ "${{ github.event.inputs.release_notes }}" != '' ]]; then
-            echo "- ${{ github.event.inputs.release_notes }}" > release_notes.txt
-          else
-            awk -v ver="${{ needs.build-arch.outputs.release_version }}" '
-              $0 ~ "^## " ver { found=1; next }
-              found && $0 ~ "^## " { exit }
-              found { print }
-            ' "${{ github.workspace }}/CHANGELOG.md" > release_notes.txt
-          fi
-          echo "release_notes: $(cat release_notes.txt)"
-          # 检查是否提取到内容
-          if [ ! -s release_notes.txt ]; then
-            echo "⚠️ No changelog found for $VERSION, using default message"
-            echo "详见 [CHANGELOG.md](./CHANGELOG.md)" > release_notes.txt
-          fi
+      - name: Download release_notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release_notes
+          path: release_notes.txt
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
