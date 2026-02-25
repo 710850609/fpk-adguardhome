@@ -177,13 +177,6 @@ jobs:
           #   echo "准备完成: $NEW_FPK_NAME"
           # fi
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fpk-${{ matrix.arch }}
-          path: release/
-          retention-days: 1
-
       - name: Get Release Info
         id: release-info
         run: |
@@ -207,12 +200,21 @@ jobs:
             echo "详见 [CHANGELOG.md](./CHANGELOG.md)" > release_notes.txt
           fi
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpk-${{ matrix.arch }}
+          path: release/
+          retention-days: 1
+
       - name: Upload Release Notes
         uses: actions/upload-artifact@v4
         with:
           name: release_notes
           path: release/
           retention-days: 1
+          # 不同架构使用同名，需要设置覆盖
+          overwrite: true
 
       - name: Cleanup
         run: |
