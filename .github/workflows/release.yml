@@ -26,7 +26,6 @@ jobs:
       release_version: ${{ steps.set-tag.outputs.release_version }}
       prerelease: ${{ steps.set-tag.outputs.prerelease }}
     steps:
-    steps:
       - name: workflow dispatch params
         run: |
           echo "release_notes: ${{ github.event.inputs.release_notes }}"
