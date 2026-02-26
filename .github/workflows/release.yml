@@ -270,3 +270,16 @@ jobs:
           echo "包含的文件:"
           ls -la combined-release/
           echo "================"
+
+      - name: Push FnDepot
+        if: ${{ needs.setup.outputs.prerelease == 'false' }}
+        run: |
+          new_version="${{ needs.build-arch.outputs.release_version }}"
+          changelog=$(cat release_notes.txt)
+          
+          gh workflow run update-AdGuardHome.yml \
+            --repo "710850609/FnDepot" \
+            -f new_version="$new_version" \
+            -f changelog="$changelog"
+        env:
+          GH_TOKEN: ${{ secrets.FNDEPOT_TOKEN }}
