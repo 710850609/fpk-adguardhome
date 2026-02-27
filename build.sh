@@ -1,4 +1,4 @@
-build_version=13
+build_version=14
 adh_version=$(curl -s https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest | jq -r .tag_name | sed 's/^v//')
 echo "最新AdGuardHome版本: $adh_version"
 bin_file="AdGuardHome/app/bin/AdGuardHome"
@@ -148,9 +148,9 @@ jq ".[0].items |= map(if .field == \"adg_version\" then .initValue = \"$adh_vers
 echo "更新config向导中的AdGuardHome版本号为: ${adh_version}"
 jq ".[0].items[0].initValue = \"$adh_version\" \
   | .[0].items[0].rules[0].required = true \
-  | .[0].items[0].rules[0].message = \"请输入AdGuardHome版本\" \
+  | .[0].items[0].rules[0].message = \"不支持修改。请输入 $adh_version\" \
   | .[0].items[0].rules[1].pattern = \"^$adh_version\$\" \
-  | .[0].items[0].rules[1].message = \"请输入 $adh_version\"" \
+  | .[0].items[0].rules[1].message = \"不支持修改。请输入 $adh_version\"" \
   AdGuardHome/wizard/upgrade > temp.json && mv temp.json AdGuardHome/wizard/upgrade
 echo "更新upgrade向导中的AdGuardHome版本号为: ${adh_version}"
 

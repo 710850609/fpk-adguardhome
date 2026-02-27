@@ -8,7 +8,7 @@ DEFAULT_CFG_FILE="${TRIM_APPDEST}/bin/AdGuardHome.yaml"
 SCRIPT_PATH="${TRIM_APPDEST}/script"
 USER_FILTER_PATH="${TRIM_PKGVAR}/userfilters"
 
-log_msg "install_callback脚本执行中..."
+log_msg "install_callback脚本执行中，应用状态：${TRIM_APP_STATUS}..."
 
 # 旧数据清理
 update_cfg="false"
@@ -39,6 +39,10 @@ bash -c "/usr/bin/python3 -m venv ${SCRIPT_PATH}/.venv" >> ${LOG_FILE} 2>&1
 log_msg "安装离线依赖"
 bash -c "${SCRIPT_PATH}/.venv/bin/pip install --no-index --find-links=${SCRIPT_PATH}/wheels -r ${SCRIPT_PATH}/requirements.txt" >> ${LOG_FILE} 2>&1
 
+if [ "${TRIM_APP_STATUS}" == "UPGRADE" ]; then
+    log_msg "升级时，不覆盖已有配置"
+    exit 0
+fi
 
 # 设置运行配置
 if [ ! -f "${CFG_FILE}" ]; then
