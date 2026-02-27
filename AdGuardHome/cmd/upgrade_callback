@@ -1,5 +1,10 @@
 #!/bin/bash
 
 ### This script is called after the user upgrades the application.
+set -e
+source "/var/apps/${TRIM_APPNAME}/cmd/common"
+
+log_msg "upgrade_callback脚本执行中..."
+install_version
 
 exit 0

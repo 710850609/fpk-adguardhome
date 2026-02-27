@@ -148,9 +148,7 @@ jq ".[0].items |= map(if .field == \"adg_version\" then .initValue = \"$adh_vers
 echo "更新config向导中的AdGuardHome版本号为: ${adh_version}"
 jq ".[0].items[0].initValue = \"$adh_version\" \
   | .[0].items[0].rules[0].required = true \
-  | .[0].items[0].rules[0].message = \"不支持修改。请输入 $adh_version\" \
-  | .[0].items[0].rules[1].pattern = \"^$adh_version\$\" \
-  | .[0].items[0].rules[1].message = \"不支持修改。请输入 $adh_version\"" \
+  | .[0].items[0].rules[0].message = \"请输入AdGuardHome版本\"" \
   AdGuardHome/wizard/upgrade > temp.json && mv temp.json AdGuardHome/wizard/upgrade
 echo "更新upgrade向导中的AdGuardHome版本号为: ${adh_version}"
 
