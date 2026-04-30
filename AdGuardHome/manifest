@@ -1,7 +1,7 @@
 appname               = AdGuardHome
-version=0.107.72-14
+version=0.107.74-15
 display_name          = AdGuardHome
-desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>更多功能请访问官网: <a href="https://adguard.com/zh_cn/adguard-home/overview.html" target="_blank">AdGuard Home</a></br></br>使用: 启动服务后, 将路由DNS修改为飞牛IP</br>✅ 安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br>✅ 支持设置管理员账号、密码</br>✅ 支持设置管理、DNS端口</br>✅ 支持设置AdGuardHome版本</br>
+desc                  = 免费开源、强大的网络范围广告和跟踪器阻止DNS服务器</br>更多功能请访问官网: <a href="https://adguard.com/zh_cn/adguard-home/overview.html" target="_blank">AdGuard Home</a></br></br>使用: 启动服务后, 将路由DNS修改为飞牛IP</br>✅ 安装可选择国内适用配置(开箱即用, 合适国内网络环境快速使用)</br>✅ 支持设置管理员账号、密码</br>✅ 支持设置管理、DNS端口</br>
 platform=x86
 os_min_version=1.1.8
 source                = thirdparty
@@ -13,3 +13,4 @@ desktop_uidir         = ui
 desktop_applaunchname = AdGuardHome.Application
 service_port          = 53
 checkport             = false
+changelog             = 去除自定义使用AdGuardHome版本，规避升级不成功问题

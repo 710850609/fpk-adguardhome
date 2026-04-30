@@ -66,6 +66,5 @@ update_mgr_port
 update_dns_port
 update_admin_password
 update_logo
-install_version
 
 exit 0

@@ -54,32 +54,6 @@
         "helpText": "建议不修改DNS服务端口，避免某些上网设备无法使用（除非下接其他DNS服务）"
       },
       {
-        "type": "text",
-        "field": "adg_version",
-        "label": "AdGuardHome版本",
-        "initValue": "0.107.72",
-        "rules": [
-          {
-            "required": true,
-            "message": "请输入安装版本，如 0.107.71 或 0.108.0-b.80"
-          }
-        ]
-      },
-      {
-        "type": "tips",
-        "helpText": "降低版本请确认与当前版本配置的兼容性，避免无法启动服务。<a href=\"https://github.com/AdguardTeam/AdGuardHome/releases\" target=\"_blank\">官方所有版本</a>"
-      },
-      {
-        "type": "text",
-        "field": "download_proxy_url",
-        "label": "GitHub下载加速地址",
-        "initValue": "https://gh.llkk.cc"
-      },
-      {
-        "type": "tips",
-        "helpText": "如下载速度较慢，可尝试更换其他加速地址。如不需要，则留空不填"
-      },
-      {
         "type": "select",
         "field": "adg_logo_name",
         "label": "Logo样式",
